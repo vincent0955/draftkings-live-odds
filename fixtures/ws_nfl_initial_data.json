@@ -1,0 +1,16 @@
+{
+ "url": "wss://sportsbook-ws-us-il.draftkings.com/websocket?format=msgpack&locale=en",
+ "note": "subscribe with initialData:true",
+ "frames": [
+  {
+   "dir": "send",
+   "t": 1791459656.2044146,
+   "raw_b64": "hKdqc29ucnBjozIuMKZtZXRob2Spc3Vic2NyaWJlomlk2SRjMmMzNzA5Ni1hNTY0LTQ0ZGQtOTYyNy0xOTJkNDI0OGEwZjWmcGFyYW1zhqZlbnRpdHmmZXZlbnRzq3F1ZXJ5UGFyYW1zhaVxdWVyedlvJGZpbHRlcj1sZWFndWVJZCBlcSAnODg4MDgnIEFORCBjbGllbnRNZXRhZGF0YS9TdWJjYXRlZ29yaWVzL2FueShzOiBzL0lkIGVxICc0NTE4JykgYW5kIHRhZ3MvYW55KHQ6IHQgZXEgJ09TQicpq2luaXRpYWxEYXRhw6pwcm9qZWN0aW9uqnNwb3J0c2Jvb2umbG9jYWxlomVurmluY2x1ZGVNYXJrZXRz2XYkZmlsdGVyPWNsaWVudE1ldGFkYXRhL3N1YkNhdGVnb3J5SWQgZXEgJzQ1MTgnIEFORCB0YWdzL2FsbCh0OiB0IG5lICdTcG9ydGNhc3RCZXRCdWlsZGVyJykgYW5kIHRhZ3MvYW55KHQ6IHQgZXEgJ09TQicpsGZvcndhcmRlZEhlYWRlcnOArmNsaWVudE1ldGFkYXRhg6dmZWF0dXJlpmxlYWd1Za1YLUNsaWVudC1OYW1lo3dlYrBYLUNsaWVudC1WZXJzaW9uqjI2NDAuNC4xLjijand0rWRlZmF1bHQtdG9rZW6oc2l0ZU5hbWWmZGt1c2ls"
+  },
+  {
+   "dir": "receive",
+   "t": 1791459657.449014,
+   "raw_b64": "ldkkYzJjMzcwOTYtYTU2NC00NGRkLTk2MjctMTkyZDQyNDhhMGY1qnN1YnNjcmliZWTAwJLX/xSVugBqx4FJAA=="
+  }
+ ]
+}
