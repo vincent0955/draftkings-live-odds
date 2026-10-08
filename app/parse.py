@@ -75,3 +75,38 @@ SIDES = {"home": "home", "away": "away", "over": "over", "under": "under"}
 
 def side(outcome_type) -> Optional[str]:
     return SIDES.get(str(outcome_type or "").strip().lower())
+
+
+# DraftKings selection ids encode the market, side and line of a main-line
+# selection, which lets the server place a socket update without a snapshot:
+#   0ML84695570_3        -> market 1_84695570, away (moneyline)
+#   0HC84695450N300_1    -> market 2_84695450, home, -3.0 (spread)
+#   0OU84695570O4750_1   -> market 3_84695570, over, 47.5 (total)
+# Suffix _1 is home/over, _3 is away/under. Verified against every main-line
+# selection in the captured snapshots (tests/test_snapshot.py).
+_SEL_ML = re.compile(r"0ML(\d+)_([13])")
+_SEL_HC = re.compile(r"0HC(\d+)([NP])(\d+)_([13])")
+_SEL_OU = re.compile(r"0OU(\d+)([OU])(\d+)_([13])")
+MARKET_PREFIX_KIND = {"1": "moneyline", "2": "spread", "3": "total"}
+
+
+def selection_key(selection_id):
+    """-> (market_id, side, line) or None if the id isn't a main-line selection."""
+    s = str(selection_id or "")
+    m = _SEL_ML.fullmatch(s)
+    if m:
+        return f"1_{m.group(1)}", "home" if m.group(2) == "1" else "away", None
+    m = _SEL_HC.fullmatch(s)
+    if m:
+        line = int(m.group(3)) / 100 * (-1 if m.group(2) == "N" else 1)
+        return f"2_{m.group(1)}", "home" if m.group(4) == "1" else "away", line
+    m = _SEL_OU.fullmatch(s)
+    if m:
+        return f"3_{m.group(1)}", "over" if m.group(2) == "O" else "under", int(m.group(3)) / 100
+    return None
+
+
+def market_kind_from_id(market_id):
+    """'2_84695450' -> 'spread'. Only for main-line market ids."""
+    prefix, _, rest = str(market_id or "").partition("_")
+    return MARKET_PREFIX_KIND.get(prefix) if rest.isdigit() else None

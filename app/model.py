@@ -16,7 +16,7 @@ class Game:
 @dataclass
 class Market:
     id: str
-    game_id: str
+    game_id: Optional[str]  # None until we know the game (socket-only mode)
     kind: str  # moneyline | spread | total
     suspended: bool = False
     as_of: float = 0.0  # DraftKings publish time of the last state we applied

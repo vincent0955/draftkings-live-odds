@@ -164,3 +164,59 @@ def test_board_shape(nfl_day2):
     assert first["name"] == "TB Buccaneers @ DAL Cowboys"
     assert set(first["markets"]) == {"moneyline", "spread", "total"}
     assert set(first["markets"]["total"]["outcomes"]) == {"over", "under"}
+
+
+# --- socket-only mode: no REST snapshot (DraftKings blocks it from AWS) -------
+
+def test_socket_only_places_updates_from_the_selection_id():
+    book = Book()  # no snapshot at all
+    apply_frame(book, wire.update_frame("sub", published=100, change_selections=[
+        wire.selection_change("0ML84695570_3", "TB", 360),
+        wire.selection_change("0HC84695450N250_1", "SEA", -118),   # no line in the message
+        wire.selection_change("0OU84695570O4750_1", "Over", -112),
+    ]))
+    ov = book.overlay()
+    assert ov["1_84695570"]["outcomes"]["away"]["american"] == 360
+    assert ov["2_84695450"]["kind"] == "spread"
+    assert ov["2_84695450"]["outcomes"]["home"]["line"] == -2.5  # decoded from N250
+    assert ov["3_84695570"]["outcomes"]["over"]["line"] == 47.5
+    assert ov["1_84695570"]["game_id"] is None
+    assert book.board() == []  # no games known: the browser supplies those
+    assert book.stats["ignored_unknown_ids"] == 0
+
+
+def test_socket_only_line_move_suspension_and_delete():
+    book = Book()
+    apply_frame(book, wire.update_frame("sub", published=100, change_markets=[wire.market_change("2_84695450", "Spread", True)]))
+    apply_frame(book, wire.update_frame("sub", published=101, delete_selections=["0HC84695450N300_1"]))
+    off = book.overlay()["2_84695450"]
+    assert off["suspended"] is True
+    assert off["outcomes"]["home"]["available"] is False and off["outcomes"]["home"]["line"] == -3
+    apply_frame(book, wire.update_frame("sub", published=102, insert_selections=[
+        wire.selection_full("0HC84695450N250_1", "2_84695450", "SEA", -122, -2.5, "Home")]))
+    home = book.overlay()["2_84695450"]["outcomes"]["home"]
+    assert (home["available"], home["line"], home["american"], home["prev_line"]) == (True, -2.5, -122, -3)
+    # a late delete for the old line must not knock out the new one
+    apply_frame(book, wire.update_frame("sub", published=103, delete_selections=["0HC84695450N300_1"]))
+    assert book.overlay()["2_84695450"]["outcomes"]["home"]["available"] is True
+
+
+def test_socket_only_replays_the_live_match():
+    """The real tennis frames, no snapshot: still ends on the right prices."""
+    book = Book()
+    subs = subscriptions(TENNIS)
+    last = {}
+    for direction, t, raw in recorded_frames(TENNIS):
+        if direction != "receive":
+            continue
+        msg = protocol.decode(raw)
+        p = subs.get(msg.sub_id)
+        if msg.kind != "update" or "6364" not in p["queryParams"]["query"]:
+            continue
+        upd = protocol.parse_update(p["entity"], msg, t)
+        for op in upd.ops:
+            if op.entity == "selection" and op.action == "change":
+                last[op.id] = op.fields["american"]
+        book.apply(upd, now=t)
+    held = {o.selection_id: o.american for o in book.outcomes.values() if o.market_id == MATCH_ML}
+    assert held == last

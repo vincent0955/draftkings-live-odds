@@ -81,7 +81,11 @@
 <script>
 "use strict";
 const SHOW_PREV_MS = 120000, FLASH_MS = 3000, STATUS_TIMEOUT_MS = 6000, STALE_AFTER_S = 30;
-const state = { games: [], status: null, statusAt: 0, connected: false, lastConfirmedWall: null };
+const state = { games: [], status: null, statusAt: 0, connected: false, lastConfirmedWall: null,
+  // "browser" mode: DraftKings blocks the REST snapshot from our server's IP, so the page
+  // loads it straight from DraftKings and lays the server's live socket data on top.
+  mode: "server", dkUrl: null, restBoard: null, restAt: 0, restError: null, loading: false, pending: [] };
+const REST_REFRESH_MS = 120000;
 const latencySamples = [];
 let clockOffsetMs = 0, bestRtt = Infinity;  // server clock - browser clock
 
@@ -163,6 +167,10 @@ function applyChanges(events) {
       const [g, kind, m] = findMarket(ev.market_id);
       if (!g) continue;
       const before = m.outcomes[ev.side];
+      if (before && ev.prev_american == null && (before.american !== ev.american || before.line !== ev.line)) {
+        // browser mode: the server never saw the old price, but we have it from DraftKings
+        ev.prev_american = before.american; ev.prev_line = before.line;
+      }
       m.outcomes[ev.side] = ev;
       let flash = null;
       if (before && ev.available) {
@@ -176,11 +184,97 @@ function applyChanges(events) {
       if (!g) continue;
       m.suspended = ev.suspended;
       for (const side of Object.keys(m.outcomes)) refreshCell(g, kind, side, null);
+    } else if (ev.type === "resync") {
+      if (state.mode === "browser") resyncFromBrowser();
     } else if (ev.type === "game") {
       const g = state.games.find(x => x.id === ev.game_id);
       if (g) { g.status = ev.status; renderBoard(); }
     }
   }
+}
+
+// --- browser mode: board from DraftKings, live changes from our server -----
+const KIND_BY_OFFER = { 2: "moneyline", 1: "spread", 6: "total" };
+function parseAmerican(v) {
+  if (v == null) return null;
+  const t = String(v).trim().replace("\u2212", "-");
+  if (/^even$/i.test(t)) return 100;
+  if (!/^[+-]?\d{3,6}$/.test(t)) return null;
+  const n = parseInt(t, 10);
+  return Math.abs(n) >= 100 ? n : null;
+}
+// Same mapping as app/snapshot.py, on DraftKings' REST JSON.
+function normalizeDk(d) {
+  const games = {}, markets = {};
+  for (const ev of d.events || []) {
+    const parts = {};
+    for (const p of ev.participants || []) parts[p.venueRole] = p.name;
+    const iso = ev.startEventDate ? String(ev.startEventDate).replace(/(\.\d{3})\d+/, "$1") : null;
+    games[ev.id] = { id: String(ev.id), name: ev.name || "", away: parts.Away || "", home: parts.Home || "",
+                     start: iso ? Date.parse(iso) / 1000 : null, status: ev.status || "NOT_STARTED", markets: {} };
+  }
+  for (const m of d.markets || []) {
+    const mt = m.marketType || {};
+    const named = String(mt.name || m.name || "").toLowerCase();
+    const kind = KIND_BY_OFFER[mt.betOfferTypeId] || (["moneyline", "spread", "total"].includes(named) ? named : null);
+    const g = games[m.eventId];
+    if (!kind || !g) continue;
+    g.markets[kind] = markets[m.id] = { id: String(m.id), suspended: !!m.isSuspended, outcomes: {} };
+  }
+  for (const sel of d.selections || []) {
+    const m = markets[sel.marketId];
+    const side = String(sel.outcomeType || "").toLowerCase();
+    const american = parseAmerican((sel.displayOdds || {}).american);
+    if (!m || !["home", "away", "over", "under"].includes(side) || american == null) continue;
+    m.outcomes[side] = { market_id: m.id, side, selection_id: sel.id, line: sel.points ?? null, american,
+                         decimal: sel.trueOdds ?? null, available: true, prev_line: null, prev_american: null, changed_at: null };
+  }
+  return Object.values(games).sort((a, b) => (a.start || 0) - (b.start || 0) || a.name.localeCompare(b.name));
+}
+// Everything the server's socket has seen beats REST: it is newer by construction.
+function applyOverlay(games, overlay) {
+  const idx = {};
+  for (const g of games) for (const m of Object.values(g.markets)) idx[m.id] = m;
+  for (const [mid, om] of Object.entries(overlay || {})) {
+    const m = idx[mid];
+    if (!m) continue;
+    m.suspended = om.suspended;
+    for (const [side, o] of Object.entries(om.outcomes)) {
+      const rest = m.outcomes[side] || {};
+      if (o.american == null) { m.outcomes[side] = { ...rest, ...o, american: rest.american ?? null }; continue; }
+      if (o.prev_american == null && rest.american != null && (rest.american !== o.american || rest.line !== o.line))
+        o.prev_american = rest.american, o.prev_line = rest.line;  // REST copy may predate the change
+      m.outcomes[side] = o;
+    }
+  }
+}
+async function loadRestBoard(force) {
+  if (!force && state.restBoard && Date.now() - state.restAt < REST_REFRESH_MS) return true;
+  try {
+    const r = await fetch(state.dkUrl, { cache: "no-store" });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    state.restBoard = normalizeDk(await r.json());
+    state.restAt = Date.now(); state.restError = null;
+    return true;
+  } catch (e) {
+    state.restError = String(e && e.message || e);
+    return !!state.restBoard;
+  }
+}
+async function rebuildFromBrowser(overlay, forceRest) {
+  state.loading = true;
+  const ok = await loadRestBoard(forceRest);
+  if (ok) { state.games = structuredClone(state.restBoard); applyOverlay(state.games, overlay); }
+  state.loading = false;
+  renderBoard(); renderStatus(); renderLatency();
+  for (const evs of state.pending.splice(0)) applyChanges(evs);  // arrived while we were loading
+}
+async function resyncFromBrowser() {
+  try {
+    const d = await (await fetch("/api/odds", { cache: "no-store" })).json();
+    state.dkUrl = d.dk_snapshot_url;
+    await rebuildFromBrowser(d.overlay, true);
+  } catch (_) {}
 }
 
 // --- status / staleness ----------------------------------------------------
@@ -200,6 +294,11 @@ function renderStatus() {
     level = s.state === "down" ? "bad" : "warn";
   } else if (s && s.state === "polling") {
     problem = `DraftKings live feed is down; refreshing every few seconds instead. Last confirmed ${lastConfirmed}.`;
+  } else if (state.mode === "browser" && state.restError) {
+    problem = state.restBoard
+      ? `Couldn't refresh the board from DraftKings (${state.restError}); showing the last copy plus live changes.`
+      : `Couldn't load the NFL board from DraftKings from your network (${state.restError}). Live changes are arriving, but can't be shown without it.`;
+    level = state.restBoard ? "warn" : "bad";
   } else if (confirmedAge != null && confirmedAge > STALE_AFTER_S) {
     problem = `No confirmation from DraftKings for ${ago(confirmedAge)}. Odds may be stale.`;
   }
@@ -211,7 +310,8 @@ function renderStatus() {
   pill.className = "pill" + (problem && level === "bad" ? " bad" : s && s.state === "live" && !problem ? " live" : "");
   $("confirmed").textContent = confirmedAge != null ? `odds confirmed current ${ago(confirmedAge)} ago` : "";
   if (s) document.querySelector("h1").firstChild.textContent = s.source === "replay" ? "Replay: recorded live match " : "NFL odds ";
-  $("site").textContent = s ? s.site + (s.ping_ms ? ` · ping ${Math.round(s.ping_ms)} ms` : "") : "";
+  $("site").textContent = s ? s.site + (s.ping_ms ? ` · ping ${Math.round(s.ping_ms)} ms` : "") +
+    (state.mode === "browser" ? " · board loaded by your browser, live changes from the server" : "") : "";
 }
 
 function renderLatency() {
@@ -232,7 +332,7 @@ function renderLatency() {
     `<tr><td><b>DraftKings publish → your screen (p50 sum)</b></td><td><b>${total}</b></td><td></td><td></td></tr>` +
     (L.dk_clock && L.dk_clock.uncertainty_ms != null ? `<tr><td colspan="4">DraftKings' clock vs our server: ${L.dk_clock.offset_ms > 0 ? "+" : ""}${L.dk_clock.offset_ms} ms (±${L.dk_clock.uncertainty_ms} ms), corrected for above</td></tr>` : "");
   const c = s.counters || {};
-  $("counters").textContent = `${s.games} games · ${c.updates || 0} socket updates · ${c.changes || 0} changes applied · ` +
+  $("counters").textContent = `${state.games.length} games · ${c.updates || 0} socket updates · ${c.changes || 0} changes applied · ` +
     `${s.reconnects} reconnects · ${c.drift_fixed || 0} drift corrections · ${c.invalid_rows || 0} invalid rows dropped · ` +
     `${c.dropped_out_of_order || 0} out-of-order dropped`;
 }
@@ -266,8 +366,14 @@ function connect() {
   es.onerror = () => { state.connected = false; renderStatus(); };  // EventSource retries by itself
   es.addEventListener("board", e => {
     const d = JSON.parse(e.data);
-    state.games = d.games; state.status = d.status; state.statusAt = Date.now();
-    renderBoard(); renderStatus(); renderLatency();
+    state.status = d.status; state.statusAt = Date.now(); state.dkUrl = d.dk_snapshot_url;
+    if (d.games.length || !d.dk_snapshot_url || (d.status && d.status.snapshot !== "browser")) {
+      state.mode = "server"; state.games = d.games;
+      renderBoard(); renderStatus(); renderLatency();
+    } else {
+      state.mode = "browser";
+      rebuildFromBrowser(d.overlay, false);
+    }
   });
   es.addEventListener("changes", e => {
     const d = JSON.parse(e.data);
@@ -276,7 +382,7 @@ function connect() {
     // for a couple of seconds, so the number reflects the app, not Chrome.
     if (!document.hidden && performance.now() - visibleSince > 2000)
       latencySamples.push(Date.now() + clockOffsetMs - d.server_emit * 1000);
-    applyChanges(d.events);
+    if (state.loading) state.pending.push(d.events); else applyChanges(d.events);
   });
   es.addEventListener("status", e => {
     state.status = JSON.parse(e.data); state.statusAt = Date.now();
@@ -288,6 +394,7 @@ connect();
 syncClock(); setInterval(syncClock, 30000);
 setInterval(flushLatency, 10000);
 setInterval(renderStatus, 1000);
+setInterval(() => { if (state.mode === "browser") resyncFromBrowser(); }, REST_REFRESH_MS);  // new games, missed moves
 setInterval(() => {  // let "was …" labels expire
   for (const g of state.games) for (const [kind, m] of Object.entries(g.markets))
     for (const side of Object.keys(m.outcomes)) {

@@ -11,6 +11,7 @@ import time
 from dataclasses import asdict
 from typing import Dict, List, Optional, Tuple
 
+from . import parse
 from .model import Game, Market, Outcome, Snapshot
 from .protocol import Op, Update
 
@@ -66,6 +67,7 @@ class Book:
         for mid, m in snap.markets.items():
             prev = old_markets.get(mid)
             if prev is not None and reconcile:
+                prev.game_id = prev.game_id or m.game_id  # placeholder from socket-only mode
                 self.markets[mid] = prev  # the socket owns suspension state while it's up
                 continue
             self.markets[mid] = Market(m.id, m.game_id, m.kind, m.suspended, 0.0)
@@ -105,6 +107,11 @@ class Book:
             return [BOARD]
         return events
 
+    def clear(self) -> None:
+        """Forget all board state (stats are kept)."""
+        self.games, self.markets, self.outcomes, self.sel_index = {}, {}, {}, {}
+        self._suspects, self.needs_resync = {}, False
+
     # -------------------------------------------------------------- socket
     def apply(self, upd: Update, now: Optional[float] = None) -> List[dict]:
         now = now or time.time()
@@ -131,26 +138,69 @@ class Book:
 
     # selections ---------------------------------------------------------
     def _change_selection(self, op: Op, published: float, now: float, upd: Update):
-        key = self.sel_index.get(op.id)
+        key = self.sel_index.get(op.id) or self._derive(op.id)
         if key is None:
             self.stats["ignored_unknown_ids"] += 1
-            return None
-        out = self.outcomes[key]
-        if published < out.as_of:
-            self.stats["dropped_out_of_order"] += 1
             return None
         american = op.fields.get("american")
         if american is None:
             self.stats["invalid_rows"] += 1
             return None
+        out = self.outcomes.get(key)
+        if out is None or out.selection_id != op.id:
+            # Never seen this selection: no snapshot (socket-only mode), or the
+            # line moved before we started. The id itself tells us where it goes.
+            return self._place(key, op.id, op.fields.get("line"), american, op.fields.get("decimal"),
+                               published, now, upd)
+        if published < out.as_of:
+            self.stats["dropped_out_of_order"] += 1
+            return None
         line = op.fields.get("line") if op.fields.get("line") is not None else out.line
         out.as_of = published
-        if (american, line) == (out.american, out.line):
+        if (american, line, True) == (out.american, out.line, out.available):
             return None
         out.prev_american, out.prev_line = out.american, out.line
-        out.american, out.line = american, line
+        out.american, out.line, out.available = american, line, True
         out.decimal = op.fields.get("decimal") or out.decimal
         out.changed_at = now
+        return self._outcome_event(out, upd)
+
+    def _derive(self, selection_id: str):
+        """(market_id, side) from the selection id itself, creating a
+        placeholder market (no game yet) if we haven't seen the market."""
+        k = parse.selection_key(selection_id)
+        if k is None or self._ensure_market(k[0]) is None:
+            return None
+        return k[0], k[1]
+
+    def _ensure_market(self, market_id: str) -> Optional[Market]:
+        m = self.markets.get(market_id)
+        if m is None:
+            kind = parse.market_kind_from_id(market_id)
+            if kind is None:
+                return None
+            m = self.markets[market_id] = Market(market_id, None, kind)
+        return m
+
+    def _place(self, key, sel_id, line, american, decimal, published, now, upd):
+        """Put a selection we haven't indexed yet onto its (market, side) row."""
+        derived = parse.selection_key(sel_id)
+        if line is None and derived is not None:
+            line = derived[2]
+        out = self.outcomes.get(key)
+        if out is not None and published < out.as_of:
+            self.stats["dropped_out_of_order"] += 1
+            return None
+        if out is None:
+            out = self.outcomes[key] = Outcome(key[0], key[1], sel_id, line, american, decimal, as_of=published)
+        else:
+            self.sel_index.pop(out.selection_id, None)
+            if (out.line, out.american) != (line, american):
+                out.prev_line, out.prev_american = out.line, out.american
+            out.selection_id, out.line, out.american, out.decimal = sel_id, line, american, decimal
+            out.available, out.as_of = True, published
+        out.changed_at = now
+        self.sel_index[sel_id] = key
         return self._outcome_event(out, upd)
 
     def _insert_selection(self, op: Op, published: float, now: float, upd: Update):
@@ -158,7 +208,7 @@ class Book:
         shows up: the old selection is deleted and a new id is inserted."""
         f = op.fields
         mid, side, american = f.get("market_id"), f.get("side"), f.get("american")
-        market = self.markets.get(str(mid)) if mid is not None else None
+        market = self._ensure_market(str(mid)) if mid is not None else None
         if market is None:
             self.stats["ignored_unknown_ids"] += 1
             return None
@@ -187,7 +237,19 @@ class Book:
     def _delete_selection(self, op: Op, published: float, now: float, upd: Update):
         key = self.sel_index.pop(op.id, None)
         if key is None:
-            return None
+            key = self._derive(op.id)
+            if key is None:
+                return None
+            out = self.outcomes.get(key)
+            if out is not None and out.selection_id != op.id:
+                return None  # an older line we never tracked; the current one stays
+            if out is None:
+                # Socket-only mode: remember that this line is off the board, so
+                # a browser holding it from REST can grey it out.
+                derived = parse.selection_key(op.id)
+                out = self.outcomes[key] = Outcome(key[0], key[1], op.id, derived[2], None, None,
+                                                   available=False, as_of=published, changed_at=now)
+                return self._outcome_event(out, upd)
         out = self.outcomes[key]
         if published < out.as_of:
             self.stats["dropped_out_of_order"] += 1
@@ -200,7 +262,7 @@ class Book:
 
     # markets ------------------------------------------------------------
     def _change_market(self, op: Op, published: float, now: float, upd: Update):
-        m = self.markets.get(op.id)
+        m = self._ensure_market(op.id)
         susp = op.fields.get("suspended")
         if m is None or susp is None:
             return None
@@ -275,6 +337,18 @@ class Book:
         d = asdict(out)
         d.pop("as_of", None)
         return d
+
+    def overlay(self) -> Dict[str, dict]:
+        """Everything the server knows per market, keyed by market id, games or
+        not. In socket-only mode the browser loads the board from DraftKings'
+        REST API itself and lays this on top: the socket is fresher than REST."""
+        out: Dict[str, dict] = {}
+        for m in self.markets.values():
+            out[m.id] = {"kind": m.kind, "game_id": m.game_id, "suspended": m.suspended, "outcomes": {}}
+        for o in self.outcomes.values():
+            if o.market_id in out:
+                out[o.market_id]["outcomes"][o.side] = self._outcome_json(o)
+        return out
 
     def board(self) -> List[dict]:
         """Full board in display order: games by kickoff, each with ML / spread / total."""

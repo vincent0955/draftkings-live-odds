@@ -46,6 +46,11 @@ class Status:
     reconnects: int = 0
     ping_ms: Optional[float] = None
     last_error: Optional[str] = None
+    # Where the starting board comes from. "server": we fetch DraftKings' REST
+    # snapshot. "browser": REST is blocked for this server (Akamai returns 403
+    # to AWS IPs), so each browser fetches it and we stream socket changes on top.
+    snapshot: str = "server"
+    snapshot_error: Optional[str] = None
     log: List[str] = field(default_factory=list)  # recent connection events, newest last
 
     def note(self, text: str) -> None:
@@ -160,8 +165,7 @@ class LiveFeed:
 
                 # Base state. We subscribed first, so nothing can fall in the gap:
                 # REST goes in, then every socket update received since goes on top.
-                snap, _ = await snapshot.fetch(self.client, cfg)
-                self.publish(self.book.load_snapshot(snap, mode="replace"))
+                await self._load_base_state(reconnecting=self.status.reconnects > 0)
                 for upd in buffer:
                     self._apply(upd)
                 buffer.clear()
@@ -170,15 +174,36 @@ class LiveFeed:
                 now = time.time()
                 self.status.state = "live"
                 self.status.connected_since = now
-                self.status.last_snapshot_at = now
                 self.status.last_confirmed_at = now
-                self.status.note(f"live: {len(self.book.games)} games, subscribed to {cfg.site_name}")
+                self.status.note(f"live: {len(self.book.games)} games from REST, board source: {self.status.snapshot}, "
+                                 f"subscribed to {cfg.site_name}")
                 done, _ = await asyncio.wait({reader_task, heartbeat_task}, return_when=asyncio.FIRST_COMPLETED)
                 for t in done:
                     t.result()  # re-raise the reason we stopped
             finally:
                 reader_task.cancel()
                 heartbeat_task.cancel()
+
+    async def _load_base_state(self, reconnecting: bool) -> None:
+        try:
+            snap, _ = await snapshot.fetch(self.client, self.cfg)
+        except Exception as e:
+            first = self.status.snapshot != "browser"
+            self.status.snapshot = "browser"
+            self.status.snapshot_error = f"{type(e).__name__}: {e}"[:200]
+            if first:
+                self.status.note(f"REST snapshot unavailable from this server ({self.status.snapshot_error}); "
+                                 "browsers will load the board directly, socket changes still stream")
+                self.publish([{"type": "board"}])  # open pages switch to loading the board themselves
+            if reconnecting:
+                # Socket-only: whatever we held may have missed changes during the
+                # gap. Forget it and have browsers reload the board from REST.
+                self.book.clear()
+                self.publish([{"type": "resync"}])
+            return
+        self.status.snapshot, self.status.snapshot_error = "server", None
+        self.status.last_snapshot_at = time.time()
+        self.publish(self.book.load_snapshot(snap, mode="replace"))
 
     async def _heartbeat(self, ws) -> None:
         while True:
@@ -214,8 +239,14 @@ class LiveFeed:
             self._resync.clear()
             if self.status.state != "live":
                 continue
+            if self.status.snapshot == "browser" and self.book.needs_resync:
+                self.book.needs_resync = False
+                self.publish([{"type": "resync"}])  # e.g. a new game: browsers reload the board
             try:
                 snap, _ = await snapshot.fetch(self.client, self.cfg)
+                if self.status.snapshot == "browser":
+                    self.status.note("REST snapshot reachable again; the server owns the board")
+                    self.status.snapshot, self.status.snapshot_error = "server", None
                 before = self.book.stats["drift_fixed"]
                 self.publish(self.book.load_snapshot(snap, mode="reconcile"))
                 self.status.last_reconcile_at = self.status.last_snapshot_at = time.time()
@@ -223,7 +254,8 @@ class LiveFeed:
                 if fixed:
                     self.status.note(f"reconcile corrected {fixed} values the socket missed")
             except Exception as e:
-                log.warning("reconcile failed: %r", e)
+                if self.status.snapshot != "browser":
+                    log.warning("reconcile failed: %r", e)
 
     # --------------------------------------------------------- fallback
     async def _poll_for(self, seconds: float) -> None:

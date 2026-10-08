@@ -84,7 +84,11 @@ def create_app(cfg: Optional[Config] = None) -> FastAPI:
         return d
 
     def board_payload() -> dict:
-        return {"games": book.board(), "status": status_payload()}
+        # dk_snapshot_url: in "browser" mode the page fetches the board itself
+        # (DraftKings' REST API sends access-control-allow-origin: *), then
+        # lays the server's overlay (everything the socket has told us) on top.
+        return {"games": book.board(), "overlay": book.overlay(), "dk_snapshot_url": cfg.snapshot_url,
+                "status": status_payload()}
 
     @app.get("/")
     async def index():

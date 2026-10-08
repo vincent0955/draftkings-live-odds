@@ -149,16 +149,40 @@ async def test_garbage_from_draftkings_does_not_break_the_feed(rig):
     task.cancel()
 
 
-async def test_draftkings_unreachable_then_recovers(rig):
-    dk, live, book, status, *_ = rig
-    dk.rest_status = 403  # e.g. bot protection kicks in
+async def test_rest_blocked_goes_live_socket_only(rig):
+    """What happens on AWS: REST returns 403 (Akamai), the socket works.
+    The feed goes live anyway; browsers load the board, the socket fills in."""
+    dk, live, book, status, latency, published = rig
+    dk.rest_status = 403
     task = await start(live)
-    await until(lambda: status.reconnects >= 1)
-    assert status.state in ("down", "connecting")
-    assert "403" in (status.last_error or "")
+    await until(lambda: status.state == "live")
+    assert status.snapshot == "browser" and "403" in status.snapshot_error
+    assert len(book.games) == 0 and status.reconnects == 0
+    await dk.push(wire.update_frame(dk.sub_id, change_selections=[wire.selection_change(TB_ML, "TB", 375)]))
+    await until(lambda: book.overlay().get("1_84695570", {}).get("outcomes", {}).get("away", {}).get("american") == 375)
+    assert any(e.get("american") == 375 for e in published)
+
+    # If REST becomes reachable, the server takes over the board, and the
+    # fresher socket value survives (REST has to disagree twice to win).
     dk.rest_status = 200
-    await until(lambda: status.state == "live", timeout=8)
-    assert len(book.games) == 15
+    live._resync.set()
+    await until(lambda: status.snapshot == "server" and len(book.games) == 15)
+    assert book.outcomes[TB_KEY].american == 375
+    assert book.board()[0]["markets"]["moneyline"]["outcomes"]["away"]["american"] == 375
+    task.cancel()
+
+
+async def test_socket_only_reconnect_tells_browsers_to_reload(rig):
+    dk, live, book, status, latency, published = rig
+    dk.rest_status = 403
+    task = await start(live)
+    await until(lambda: status.state == "live")
+    await dk.push(wire.update_frame(dk.sub_id, change_selections=[wire.selection_change(TB_ML, "TB", 375)]))
+    await until(lambda: "1_84695570" in book.overlay())
+    await dk.conns[-1].close()
+    await until(lambda: status.reconnects == 1 and status.state == "live" and len(dk.conns) == 2)
+    assert {"type": "resync"} in published
+    assert book.overlay() == {}  # anything missed during the gap is gone, browsers reload REST
     task.cancel()
 
 
