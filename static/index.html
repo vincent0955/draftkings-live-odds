@@ -50,9 +50,13 @@
   .odds.susp .main, .odds.susp .line { color: var(--muted); text-decoration: line-through; }
   .tag { font-size: 10px; font-weight: 700; color: var(--muted); border: 1px solid var(--line);
          border-radius: 4px; padding: 0 4px; margin-left: 6px; }
+  .lat { margin: 0 16px 12px; padding: 10px 14px; background: var(--panel); border: 1px solid var(--line);
+         border-radius: 10px; display: flex; flex-wrap: wrap; gap: 8px 32px; }
+  .stat .v { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .stat .k { font-size: 12px; color: var(--muted); }
+  .stat.main .v { font-size: 26px; }
+  .lat .note { align-self: center; color: var(--muted); }
   footer { padding: 0 16px 24px; color: var(--muted); font-size: 12px; }
-  footer table { min-width: 0; width: auto; }
-  footer td, footer th { padding: 2px 12px 2px 0; }
   a { color: inherit; }
 </style>
 </head>
@@ -61,9 +65,9 @@
   <h1>NFL odds <span class="muted">· DraftKings</span></h1>
   <span id="pill" class="pill">connecting</span>
   <span id="confirmed" class="muted"></span>
-  <span id="site" class="muted"></span>
 </header>
 <div id="banner" class="banner"></div>
+<section class="lat" id="lat"></section>
 <main>
   <div class="wrap">
     <table>
@@ -73,10 +77,7 @@
   </div>
 </main>
 <footer>
-  <p>Green / red = price got longer / shorter. Yellow = the line itself moved. "was" shows the previous price for 2 minutes.</p>
-  <table id="lat"></table>
-  <p id="counters"></p>
-  <p><a href="/health">/health</a> · <a href="/api/odds">/api/odds</a></p>
+  <p>Green: price went up. Red: price went down. Yellow: the line moved. The old value shows for 2 minutes. Raw numbers: <a href="/health">/health</a></p>
 </footer>
 <script>
 "use strict";
@@ -113,7 +114,7 @@ function cellHtml(game, kind, side) {
               `<span class="main">${fmtOdds(o.american)}</span>` + (m.suspended ? `<span class="tag">SUSP</span>` : "");
   if (showPrev) {
     const lineChanged = o.prev_line != null && o.prev_line !== o.line;
-    html += `<span class="was">was ${lineChanged ? fmtLine(kind, side, o.prev_line) + " " : ""}${fmtOdds(o.prev_american)} · ${ago(now - o.changed_at)} ago</span>`;
+    html += `<span class="was">was ${lineChanged ? fmtLine(kind, side, o.prev_line) + " " : ""}${fmtOdds(o.prev_american)}</span>`;
   }
   return html;
 }
@@ -287,20 +288,20 @@ function renderStatus() {
   let problem = null, level = "warn";
 
   if (!state.connected || sinceStatus > STATUS_TIMEOUT_MS) {
-    problem = `Lost connection to this site's server. Reconnecting… The odds below were last confirmed at ${lastConfirmed} and may be out of date.`;
+    problem = `Lost connection to the server. Reconnecting. Odds below are from ${lastConfirmed} and may be out of date.`;
     level = "bad";
   } else if (s && (s.state === "connecting" || s.state === "down" || s.state === "starting")) {
-    problem = `DraftKings live feed interrupted (${s.state}, ${s.reconnects} reconnects). Odds last confirmed at ${lastConfirmed} and may be out of date.`;
+    problem = `Lost the DraftKings feed. Reconnecting. Odds below are from ${lastConfirmed} and may be out of date.`;
     level = s.state === "down" ? "bad" : "warn";
   } else if (s && s.state === "polling") {
-    problem = `DraftKings live feed is down; refreshing every few seconds instead. Last confirmed ${lastConfirmed}.`;
+    problem = `DraftKings live feed is down, so odds refresh every 5 seconds instead.`;
   } else if (state.mode === "browser" && state.restError) {
     problem = state.restBoard
-      ? `Couldn't refresh the board from DraftKings (${state.restError}); showing the last copy plus live changes.`
-      : `Couldn't load the NFL board from DraftKings from your network (${state.restError}). Live changes are arriving, but can't be shown without it.`;
+      ? `Couldn't refresh the board from DraftKings, showing the last copy plus live changes.`
+      : `DraftKings blocked loading the board from your network (${state.restError}).`;
     level = state.restBoard ? "warn" : "bad";
   } else if (confirmedAge != null && confirmedAge > STALE_AFTER_S) {
-    problem = `No confirmation from DraftKings for ${ago(confirmedAge)}. Odds may be stale.`;
+    problem = `No word from DraftKings for ${ago(confirmedAge)}. Odds may be stale.`;
   }
   banner.className = "banner" + (problem ? " " + level : "");
   banner.textContent = problem || "";
@@ -308,33 +309,28 @@ function renderStatus() {
   const label = s ? ({ live: "LIVE", polling: "POLLING", replay: "REPLAY", simulate: "SIMULATED" }[s.state] || s.state.toUpperCase()) : "connecting";
   pill.textContent = problem && level === "bad" ? "STALE" : label;
   pill.className = "pill" + (problem && level === "bad" ? " bad" : s && s.state === "live" && !problem ? " live" : "");
-  $("confirmed").textContent = confirmedAge != null ? `odds confirmed current ${ago(confirmedAge)} ago` : "";
+  $("confirmed").textContent = confirmedAge != null ? `checked ${ago(confirmedAge)} ago` : "";
   if (s) document.querySelector("h1").firstChild.textContent = s.source === "replay" ? "Replay: recorded live match " : "NFL odds ";
-  $("site").textContent = s ? s.site + (s.ping_ms ? ` · ping ${Math.round(s.ping_ms)} ms` : "") +
-    (state.mode === "browser" ? " · board loaded by your browser, live changes from the server" : "") : "";
 }
 
 function renderLatency() {
   const s = state.status;
   if (!s) return;
   const L = s.latency || {};
-  const row = (name, key) => {
-    const v = L[key] || {};
-    return `<tr><td>${name}</td><td>${v.n ? v.p50 + " ms" : "—"}</td><td>${v.n ? v.p95 + " ms" : "—"}</td><td>${v.n || 0}</td></tr>`;
-  };
-  const p = k => (L[k] && L[k].n) ? L[k].p50 : null;
-  const parts = [p("dk_to_server"), p("server_to_browser")];
-  const total = parts.every(x => x != null) ? Math.round(parts[0] + parts[1]) + " ms" : "—";
-  $("lat").innerHTML = `<tr><th>Latency</th><th>p50</th><th>p95</th><th>n</th></tr>` +
-    row("DraftKings internal (created → published)", "dk_internal") +
-    row("DraftKings published → our server", "dk_to_server") +
-    row("our server → your browser", "server_to_browser") +
-    `<tr><td><b>DraftKings publish → your screen (p50 sum)</b></td><td><b>${total}</b></td><td></td><td></td></tr>` +
-    (L.dk_clock && L.dk_clock.uncertainty_ms != null ? `<tr><td colspan="4">DraftKings' clock vs our server: ${L.dk_clock.offset_ms > 0 ? "+" : ""}${L.dk_clock.offset_ms} ms (±${L.dk_clock.uncertainty_ms} ms), corrected for above</td></tr>` : "");
-  const c = s.counters || {};
-  $("counters").textContent = `${state.games.length} games · ${c.updates || 0} socket updates · ${c.changes || 0} changes applied · ` +
-    `${s.reconnects} reconnects · ${c.drift_fixed || 0} drift corrections · ${c.invalid_rows || 0} invalid rows dropped · ` +
-    `${c.dropped_out_of_order || 0} out-of-order dropped`;
+  const get = k => (L[k] && L[k].n) ? L[k] : null;
+  const ms = v => Math.round(v) + " ms";
+  const a = get("dk_to_server"), b = get("server_to_browser");
+  const stat = (v, k, cls = "") => `<div class="stat ${cls}"><div class="v">${v}</div><div class="k">${k}</div></div>`;
+  const leg = (x, name) => x ? stat(ms(x.p50), `${name}<br>slowest 5%: ${ms(x.p95)}`) : stat("–", `${name}<br>no data yet`);
+  if (!a && !b) {
+    $("lat").innerHTML = stat("–", "Latency, DraftKings to your screen", "main") +
+      `<div class="note">Measured on every line move. None yet: lines rarely move before kickoff.</div>`;
+    return;
+  }
+  const total = a && b ? "≈ " + ms(a.p50 + b.p50) : "–";
+  $("lat").innerHTML = stat(total, "Latency, DraftKings to your screen<br>typical (median)", "main") +
+    leg(a, "DraftKings → our server") + leg(b, "our server → browser") +
+    stat(Math.max(a ? a.n : 0, b ? b.n : 0), "updates measured");
 }
 
 // --- latency measurement ---------------------------------------------------
@@ -391,7 +387,8 @@ function connect() {
 }
 
 connect();
-syncClock(); setInterval(syncClock, 30000);
+(async () => { for (let i = 0; i < 5; i++) await syncClock(); })();  // keep the fastest round trip
+setInterval(syncClock, 30000);
 setInterval(flushLatency, 10000);
 setInterval(renderStatus, 1000);
 setInterval(() => { if (state.mode === "browser") resyncFromBrowser(); }, REST_REFRESH_MS);  // new games, missed moves

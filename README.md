@@ -1,175 +1,145 @@
 # DraftKings NFL Live Odds
 
-Pulls NFL main lines (moneyline, spread, total) from DraftKings and shows them on a page that updates by itself as lines move.
+A page showing DraftKings' NFL main lines (spread, total, moneyline) that updates by itself within a fraction of a second of DraftKings moving a line.
 
-- Live: https://54-165-170-102.sslip.io (AWS EC2, us-east-1)
-- Health: `/health` (feed state, last confirmed time, reconnects, latency)
+- Live site: https://54-165-170-102.sslip.io
+- Raw status and latency: https://54-165-170-102.sslip.io/health
 
 ## Run it locally
 
-Needs Python 3.10+. DraftKings only serves US visitors, so outside the US you need a US VPN for `SOURCE=live`.
+Needs Python 3.10+.
 
 ```
 python -m venv .venv
-.venv/bin/pip install -r requirements-dev.txt     # Windows: .venv\Scripts\pip ...
-.venv/bin/python -m app                            # http://localhost:8000
+.venv/bin/pip install -r requirements-dev.txt    # Windows: .venv\Scripts\pip
+.venv/bin/python -m app                           # open http://localhost:8000
 ```
 
-Other modes, no DraftKings access needed:
+Live mode (the default) needs a US connection, because DraftKings blocks other countries. These work from anywhere:
 
 ```
-SOURCE=replay   python -m app    # replays 5 min of a real recorded live match (DraftKings' original bytes)
-SOURCE=simulate python -m app    # fake NFL moves, suspensions and line moves, in DraftKings' wire format
-python -m pytest                 # 34 tests, mostly against captured DraftKings data or a fake DraftKings server
-python scripts/probe.py --states IL,NJ   # can this machine reach DraftKings?
+SOURCE=replay   python -m app    # replays a real recorded live match
+SOURCE=simulate python -m app    # fake NFL line moves in DraftKings' real format
+python -m pytest                 # 34 tests
 ```
 
-On Windows PowerShell set env vars with `$env:SOURCE="replay"` first.
-
-If DraftKings blocks the machine's IP for the REST call (it does on AWS), set `DK_HTTP_PROXY` to a US proxy. It accepts `http://user:pass@host:port`, `socks5://...`, or the `host:port:user:pass` format proxy providers hand out.
+In PowerShell, set variables with `$env:SOURCE="replay"`. If DraftKings blocks your IP (it blocks AWS), set `DK_HTTP_PROXY` to a US proxy.
 
 ## How it works
 
 ```
-DraftKings socket (msgpack, diffs) ──> server: odds book in memory ──SSE──> browsers
-DraftKings REST (full snapshot) ─────> server (through a US proxy on AWS, see "What happened on AWS")
+DraftKings WebSocket (changes only) ──> server (odds in memory) ──SSE──> browsers
+DraftKings REST API (full board) ─────> server, at startup and every 60 s
 ```
 
-1. The server opens one WebSocket to DraftKings and subscribes to NFL game lines, using the same subscription DraftKings' own NFL page sends.
-2. It then loads the full board from DraftKings' REST endpoint, and applies every socket update received since subscribing on top. Subscribing first means nothing can fall in the gap.
-3. From then on, each socket update changes only the affected prices in memory and is pushed to every open browser over Server-Sent Events.
-4. Every 60 seconds it re-fetches REST as a safety net and counts any value the socket missed ("drift").
-
-The page is plain HTML and JS. It gets the full board on connect and then only changes.
-
-On AWS, the REST calls in steps 2 and 4 go through a proxy, because DraftKings blocks them from AWS IPs. The socket connects directly. Details below.
+1. The server subscribes to DraftKings' WebSocket for NFL game lines. It's the same feed DraftKings' own site uses.
+2. The socket only sends changes, so the server loads the full board once from DraftKings' REST API. It subscribes first and loads second, so no change can slip through the gap.
+3. Each socket message updates the affected prices, and the server pushes them to every open page.
+4. Every 60 seconds it re-checks REST and fixes anything the socket missed.
 
 ## Why this approach
 
-**Polling vs the socket.** DraftKings' page gets its odds from a WebSocket that pushes changes within milliseconds. Polling REST instead would leave numbers on screen up to one poll interval old, and REST is CDN-cached for 1 second, so even fast polling has a floor. The socket is the lowest-latency source available, so the app uses it, with REST as the base state and the fallback.
+- **Socket instead of polling.** The socket delivers a change within milliseconds. Polling is always up to one interval behind, and DraftKings caches REST for 1 second anyway.
+- **One server talks to DraftKings, not each viewer.** Viewers never hit DraftKings, so its geo block doesn't affect them, and DraftKings sees one client no matter how many people have the page open.
+- **Server-Sent Events to the browser.** Data only goes one way, and SSE reconnects by itself. No frontend framework needed.
+- **EC2 instead of Vercel.** The server holds a connection open all day, which serverless functions can't do. It's one t3.small in us-east-1 with Caddy for HTTPS.
 
-**SSE to the browser** instead of WebSockets: updates only go one way, SSE reconnects by itself, and it works through any proxy. No frontend framework needed.
+## Freshness and latency
 
-**Hosting.** The server needs to hold a connection open all day, which rules out serverless (Vercel functions end after each request). It runs as one small always-on EC2 instance (t3.small, us-east-1) behind Caddy for HTTPS. `deploy/user-data.sh` sets it up unattended on first boot: packages, an NTP-synced clock, a read-only deploy key for this repo, the probe, the service and HTTPS.
+The top of the page shows latency, measured on every line move:
 
-## What I found in DraftKings' traffic
+- **DraftKings to our server:** from DraftKings' publish timestamp to when the server receives it. DraftKings' clock differs from ours (by 0.4 to 1.7 s on my laptop), so the server estimates the offset from the subscribe round trip and corrects for it.
+- **Our server to browser:** each browser syncs its clock with the server and times every push.
 
-I recorded the DraftKings site with Chrome DevTools (through a US VPN, since I'm in Japan), then reverse-engineered both feeds from the captures in `fixtures/`.
+Measured on a recorded live match:
 
-**REST snapshot.** `sportsbook-nash.draftkings.com/sites/US-IL-SB/api/sportscontent/controldata/league/leagueSubcategory/v1/markets`, with league `88808` (NFL) and subcategory `4518` (Game Lines). Returns exactly the main lines, as separate `events`, `markets` and `selections` lists joined by ID. Fields that are false are left out entirely (`isSuspended` only appears when true).
-
-**Socket.** `wss://sportsbook-ws-us-il.draftkings.com/websocket?format=msgpack`. Binary MessagePack, JSON-RPC style. Subscriptions use `initialData: false`, so it only sends changes, never the full state. That is why REST is needed at all.
-
-Each update has three groups: inserts, deletes, changes. Objects are positional arrays with no field names and a type tag (`24` = selection change, `35` = new selection, `23` = market change, and so on). I mapped the positions from about 700 live messages. Every field is validated, and anything that doesn't fit is dropped and counted rather than crashing anything.
-
-**The line is part of the selection ID.** `0HC84695450N300_1` is SEA -3. When that spread moved to -2.5 overnight, DraftKings deleted that selection and created `0HC84695450N250_1`. Price-only moves keep the ID. So the app keys every price by (market, side), never by selection ID, and shows "was -3" next to the new line. I confirmed this by comparing two NFL snapshots a day apart: all 18 IDs that disappeared were line moves.
-
-**Suspensions.** In live play a market is flagged suspended for a second or more around each point, then reopens with new prices. The page shows SUSP instead of a price that can't be bet.
-
-**REST can lag the socket.** During the live capture, REST showed one player at +115 three times over 9 seconds, while the socket said -146 two seconds later with no point played in between. So the minute-by-minute safety check only corrects a value if REST disagrees twice in a row and the socket hasn't touched it in between.
-
-**Clocks.** My laptop's clock was 1.7s behind DraftKings' one day and 0.4s the next. So the app never compares DraftKings' timestamps with its own clock for ordering. For latency it estimates DraftKings' clock offset NTP-style from the subscribe round trip (their acknowledgement carries their timestamp) and corrects for it.
-
-## Auth, geo and bot protection
-
-- **Geo:** blocked from Japan. A US VPN (Windscribe) worked in the browser. DraftKings picked Illinois from the VPN IP, and the state is in every URL (`US-IL-SB`, `dkusil`, `ws-us-il`). Odds can differ slightly by state, so this app uses Illinois (configurable with `DK_STATE`).
-- **Cookies / tokens:** none needed as far as I can tell. The REST response has `access-control-allow-origin: *`, which browsers only accept for requests sent without cookies. The socket "token" is the literal string `default-token`, so nothing expires.
-- **Bot protection:** Akamai sits in front of the REST host and returns 403 "Access Denied" to AWS IPs. It also blocks visitors outside the US. See the next section.
-- **Rate limits:** the app makes one socket connection plus one REST call a minute, the same as one person with the page open.
-
-## What happened on AWS
-
-`scripts/probe.py` on the new EC2 instance (us-east-1):
-
-- REST snapshot: **403 Access Denied** from `AkamaiGHost`, for the IL, NJ and VA sites alike, over both IPv4 and IPv6.
-- Socket: **works**, subscribed in 23 ms. The socket host isn't behind the same Akamai rule.
-
-The same REST call worked from my laptop through Windscribe, whose servers are in data centers too, so this looks like a block on large cloud providers rather than on servers in general.
-
-What I tried:
-
-1. `initialData: true` on the subscription, in five variants (events vs markets, `sportsbook` vs `betOffers` projections). The socket only ever acknowledges; it never sends a board (`fixtures/ws_nfl_initial_data.json`). DraftKings' own client code always loads the board over REST.
-2. The other hosts in DraftKings' page config (`scripts/probe_hosts.py`). The socket host does answer plain HTTP from AWS (404, not 403), but I couldn't find a path on it that serves the board.
-3. **Letting each browser load the board.** DraftKings' REST API sends `access-control-allow-origin: *`, so the page can fetch the board straight from DraftKings and lay the server's live socket changes on top. This works, but only for viewers in the US: from Japan without a VPN the browser gets blocked too. A reviewer outside the US would see an empty page, so this became the fallback rather than the main path.
-
-**What runs now: REST through a US proxy.** The server sends only its REST calls through a static residential proxy (`DK_HTTP_PROXY`). The socket still connects directly from AWS, so the proxy adds nothing to live latency. The board fetch takes about 220 ms through it. Each call is about 12 KB gzipped, so one a minute is roughly 17 MB a day of proxy traffic. Every viewer, anywhere, gets the full board from our server.
-
-The proxy credentials only exist on the server, in a root-only file (`/etc/betstamp/proxy.env`) that `deploy/set-proxy.sh` writes from a hidden prompt. They are never in the repo, and the app masks them out of logs and `/health`.
-
-**Fallbacks if the proxy fails:**
-
-- **The browser loads the board** (option 3 above), refreshed every 2 minutes, and the server keeps streaming changes. Without a snapshot the server doesn't know which market a selection belongs to, but the selection ID itself encodes the market, side and line (`0HC84695450N300_1` = market `2_84695450`, home, -3; `0ML..._3` = moneyline, away). I checked that decoding against all 500 selections in four captured snapshots.
-- **Socket beats REST.** When a page loads, the server sends everything its socket has seen, and the page lays that over the REST copy, because the socket is always the newer of the two.
-- **After a socket reconnect** in this mode, the server forgets what it held (it may have missed changes during the gap) and tells every page to reload the board.
-- **When the server can reach REST again**, it takes the board back and the browsers switch over by themselves.
-
-## How fresh are the odds?
-
-Measured from DraftKings' own timestamps on 721 live updates in the capture:
-
-| Stage | p50 | p95 |
+| | median | slowest 5% |
 |---|---|---|
-| DraftKings internal (created to published) | 23 ms | 76 ms |
-| DraftKings published to socket send | 34 ms | 134 ms |
-| DraftKings published to our server: laptop in Japan via US VPN | 128 ms | 152 ms |
+| DraftKings' own processing (created to published) | 23 ms | 76 ms |
+| DraftKings to my laptop in Japan, through a US VPN | 128 ms | 152 ms |
 
-**AWS:** no NFL game was played between the deploy and the deadline, and pregame lines barely moved, so I don't have AWS numbers yet. The socket round trip from the EC2 instance to DraftKings is 19 to 36 ms, so "published to our server" should come in well under the laptop's 128 ms. Thursday Night Football (TB @ DAL) will be the deployed app's first live NFL game, and the page footer and `/health` will show the real numbers from then on.
+I don't have AWS numbers yet. No NFL game ran between the deploy and the deadline, and pregame lines barely moved. The socket round trip from AWS to DraftKings is 19 to 36 ms, so it should beat the laptop by a lot. Thursday Night Football (TB @ DAL) is the first live NFL game, and the page will show the real numbers from then on.
 
-First live run (Oct 7, my laptop through the VPN, pointed at the tennis league because no NFL game was on): 114 socket updates in 6.5 minutes, every one applied, with 0 invalid rows, 0 out-of-order, 0 reconnects and 0 drift corrections. DraftKings' clock was 380 ms ahead of my laptop (±99 ms), which matches what the captures showed. The same build on the NFL board matched DraftKings' page line for line.
+**Staleness:** "checked 3s ago" in the header means the feed was confirmed alive 3 seconds ago, not that a line moved then. A line can sit still for hours and still be current. The server pings DraftKings every 5 seconds. If confirmation stops for 30 seconds, or the page loses the server, a warning appears saying the odds may be out of date.
 
-One thing the first run taught me: browsers hold back events for background tabs, so "server to browser" came out at 42 seconds p95 while the tab was hidden. The page now only measures while it is visible.
+## Auth, cookies, geo and bot protection
 
-The page footer shows these live (p50 and p95 over the last 2000 updates), and `/health` has the raw numbers. The header shows how long ago the odds were last *confirmed* current. That is different from how long ago they last moved: a line can sit still for an hour and still be current, as long as the socket is provably alive. The server pings DraftKings every 5 seconds, and the page says the odds may be stale if confirmation stops.
+- **Auth and cookies:** none needed. The socket's token is literally the string `default-token`.
+- **Geo:** DraftKings blocks non-US visitors. I'm in Japan, so I used a US VPN (Windscribe) to record traffic and test. DraftKings picks a state from your IP and puts it in every URL (`US-IL-SB`, `dkusil`). This app uses Illinois (`DK_STATE`).
+- **Bot protection:** Akamai returns 403 to AWS for the REST API (IPv4 and IPv6, every state I tried). The socket isn't blocked. So the server sends only its REST calls through a US residential proxy: one call a minute, about 12 KB each. The socket still connects directly, so the proxy adds no latency. The proxy credentials live only on the server.
+- **What I tried first:** letting each viewer's browser load the board from DraftKings (the API allows cross-origin requests). It worked in the US but failed for anyone outside it, so now it's only the fallback if the proxy fails.
+- **Rate limits:** one socket plus one REST call a minute, the same as one person with the page open.
+
+## Data shape
+
+**REST:** `sportsbook-nash.draftkings.com/sites/US-IL-SB/api/sportscontent/controldata/league/leagueSubcategory/v1/markets`, with league `88808` (NFL) and subcategory `4518` (Game Lines). It returns three flat lists, `events`, `markets` and `selections`, joined by ID.
+
+**Socket:** `wss://sportsbook-ws-us-il.draftkings.com/websocket?format=msgpack`. Binary MessagePack. Each update has inserts, deletes and changes, sent as arrays with no field names, just a type number (24 = price change, 35 = new selection, 23 = market change). I worked out the field positions from about 700 recorded messages.
+
+Two things I only found from the recordings:
+
+- **A line move is a new selection.** The line is part of the selection ID: `0HC84695450N300_1` is the home side at -3. When it moved to -2.5, DraftKings deleted that ID and created `0HC84695450N250_1`. So the app tracks prices by (market, side), not by ID, and can show "was -3".
+- **REST can lag the socket.** In one recording REST kept returning an old price for several seconds after the socket had the new one. So the 60-second check only overrides a price if REST disagrees twice in a row with no socket update in between.
+
+What the app serves at `/api/odds`, per game (some fields trimmed):
+
+```json
+{"name": "TB Buccaneers @ DAL Cowboys", "away": "TB Buccaneers", "home": "DAL Cowboys",
+ "start": 1791504900, "status": "NOT_STARTED",
+ "markets": {
+   "spread": {"suspended": false, "outcomes": {
+     "away": {"line": 8.5,  "american": -108, "available": true, "prev_american": null, "changed_at": null},
+     "home": {"line": -8.5, "american": -112, "available": true, "prev_american": null, "changed_at": null}}},
+   "total": {...}, "moneyline": {...}}}
+```
 
 ## When things go wrong
 
-- **Socket drops:** reconnect with exponential backoff and jitter (1s, 2s, 4s, up to 30s). While waiting, the board is refreshed from REST every 5 seconds and the page says "polling".
-- **Dead connection that never closes:** caught by the 5-second ping. No pong means reconnect.
-- **DraftKings unreachable:** the page keeps the last good odds with a banner showing when they were last confirmed, and the server keeps retrying.
-- **REST blocked from the server:** on AWS it goes through a proxy. If the proxy fails too, browsers load the board themselves and the server streams changes (see "What happened on AWS").
-- **Unexpected data:** each row is validated on its own. A bad row is dropped and counted, never fatal. A message type we can't decode triggers an immediate REST re-sync.
-- **Out-of-order updates:** dropped using DraftKings' publish timestamps.
-- **Browser loses the server:** EventSource reconnects by itself, and every reconnect starts with a full board, so a browser can't drift.
-- **Slow browser:** it gets a fresh full board instead of an ever-growing queue.
+- **Socket drops:** reconnects with backoff (1 s, 2 s, 4 s, up to 30 s), polling REST every 5 seconds meanwhile.
+- **Connection silently dies:** the 5-second ping catches it.
+- **DraftKings unreachable:** the page keeps the last good odds and warns that they may be out of date.
+- **Bad or unexpected data:** every row is checked on its own. Bad rows are dropped and counted, never fatal. An unknown message type triggers a fresh REST load.
+- **Out-of-order messages:** dropped using DraftKings' timestamps.
+- **Browser loses the server:** it reconnects by itself and gets the full board again.
 
-All of these are covered by `tests/test_feed_integration.py`, which runs the real feed against a fake DraftKings server.
+`tests/test_feed_integration.py` runs these cases against a fake DraftKings server.
 
 ## Testing without a live NFL game
 
-There was no NFL game before the deadline, so:
+There wasn't one before the deadline, so:
 
-- The parser and odds book are tested against real captures: NFL snapshots from two days, 717 frames from a live tennis match, and baseball games ending.
-- `SOURCE=replay` plays the recorded live match through the real pipeline at real speed.
-- `SOURCE=simulate` generates NFL moves in DraftKings' exact binary format, including line moves as delete plus insert.
-- Pregame NFL lines still move during the week (9 lines and 34 prices changed between my two captures), so the deployed app gets real moves.
+- Tests run on real recordings: NFL boards from two days, 717 messages from a live tennis match, and baseball games ending.
+- `SOURCE=replay` plays the tennis match through the real pipeline. `SOURCE=simulate` makes NFL moves in DraftKings' exact format.
+- I ran it live on my laptop against tennis: 114 updates in 6.5 minutes, all applied, none dropped. On the NFL board it matched DraftKings' site line for line.
 
-## A second sportsbook or league
+## Bonus items
 
-**Second league:** mostly config. League and subcategory IDs are settings (`DK_LEAGUE_ID`, `DK_SUBCATEGORY_ID`), and market types are mapped by DraftKings' `betOfferTypeId`, which is the same across sports (baseball's "Run Line" maps to spread with no new code). The tennis board in replay mode runs through the same code.
+- **Line moves:** prices flash green or red when they go up or down, yellow when the line moves, and show "was ..." for 2 minutes.
+- **Latency and staleness:** top of the page, plus `/health`.
+- **Second league:** mostly config (`DK_LEAGUE_ID`, `DK_SUBCATEGORY_ID`). Market types come from DraftKings' `betOfferTypeId`, which is the same across sports. The tennis replay already runs through the same code.
+- **Second sportsbook:** not built. I'd add one adapter per book that outputs the same (game, market, side, line, odds) changes. The hard part is matching games and teams across books ("LA Rams" vs "Los Angeles Rams").
 
-**Second sportsbook:** each book becomes an adapter that outputs the same normalized events (game, market, side, line, odds) into the same book and SSE stream. The hard part is not fetching but matching: the same game and team are named differently on each book ("LA Rams" vs "Los Angeles Rams"), and lines are formatted differently. That's where AI tooling helps most: drafting a new adapter from captured traffic like I did here, building the team and market name mapping, and flagging when a book's format changes (here, a spike in the "invalid rows" counter).
-
-## Layout
+## Code layout
 
 ```
-app/protocol.py   socket protocol: subscribe, decode, positional field mapping
-app/snapshot.py   REST fetch + normalize
-app/book.py       in-memory odds book: apply snapshot / updates, emit changes
-app/feed.py       live loop: subscribe, snapshot, buffer, heartbeat, reconnect, reconcile
-app/latency.py    latency tracking and DraftKings clock offset
-app/replay.py     SOURCE=replay; app/simulate.py SOURCE=simulate
-app/server.py     FastAPI: page, /api/odds, /api/stream (SSE), /health
+app/protocol.py   socket protocol: subscribe, decode
+app/snapshot.py   REST fetch and parsing
+app/book.py       odds in memory: apply board and changes
+app/feed.py       live loop: subscribe, load, reconnect, re-check
+app/server.py     web server: page, /api/odds, /api/stream, /health
 static/index.html the page
-fixtures/         real DraftKings captures used by tests and replay
-scripts/          probe.py (can this machine reach DraftKings?), probe_hosts.py, capture_initial.py
-deploy/           user-data.sh (unattended EC2 setup), systemd unit, Caddy config, set-proxy.sh
+fixtures/         real DraftKings recordings used by tests and replay
+scripts/probe.py  checks whether a machine can reach DraftKings
+deploy/           EC2 setup, systemd service, Caddy, proxy setup
 ```
 
 ## How I used AI
 
-I used Claude (Anthropic) for most of this, working in my own browser, terminal and AWS console.
+I built this with Claude (Anthropic's AI) writing most of the code. The parts it couldn't do were mine:
 
-- **What I did:** captured DraftKings' traffic in Chrome DevTools through a VPN (the NFL board, plus a live tennis match since no NFL game was on), picked Python and AWS, supplied the proxy when AWS got blocked, and checked the app's numbers against DraftKings' own page.
-- **What Claude did:** decoded the binary socket format from my captures, proposed the socket plus REST design, wrote most of the code, tests and this README, and did the AWS setup with me.
-- **What testing caught:** comparing DraftKings' clock with ours broke update ordering (an integration test caught it), and the live data showed REST lagging the socket, so the safety check now waits for two disagreements before correcting anything.
-- **What only showed up on deploy:** DraftKings blocks AWS for REST. The first fix (browsers load the board) didn't work for anyone outside the US, which is why the server now uses a proxy.
+- **Getting the data.** DraftKings blocks Japan, and Claude isn't allowed to open DraftKings in a browser, so it never saw the site. I set up a US VPN, recorded DraftKings' traffic in Chrome DevTools, and found a live game to record (a tennis match, since no NFL game was on). Everything the app knows about DraftKings' format came from those recordings.
+- **Checking it against the real thing.** I ran the app on my laptop over the VPN and compared it with DraftKings' site.
+- **Design questions.** Early on I flagged that this had to run in the cloud without my laptop, so we checked whether a server could reach DraftKings before building the deploy (that's `scripts/probe.py`). I asked how we'd test with no NFL games, which led to the replay and simulate modes. When the browser-loads-the-board workaround came up, I questioned why viewers' browsers should fetch anything if the server is on AWS, and offered a proxy I already had. That's what runs now.
+- **Accounts and secrets.** I set up AWS, GitHub, the VPN and the proxy, and entered the proxy credentials on the server myself.
+
+Claude decoded the socket format from my recordings, wrote most of the code, tests and deploy scripts, and drafted this README.
