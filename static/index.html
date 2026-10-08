@@ -65,6 +65,7 @@
   <h1>NFL odds <span class="muted">· DraftKings</span></h1>
   <span id="pill" class="pill">connecting</span>
   <span id="confirmed" class="muted"></span>
+  <span id="lastmove" class="muted"></span>
 </header>
 <div id="banner" class="banner"></div>
 <section class="lat" id="lat"></section>
@@ -77,11 +78,11 @@
   </div>
 </main>
 <footer>
-  <p>Green: price went up. Red: price went down. Yellow: the line moved. The old value shows for 2 minutes. Raw numbers: <a href="/health">/health</a></p>
+  <p>Green: price went up. Red: price went down. Yellow: the line moved. The old value shows for an hour. Raw numbers: <a href="/health">/health</a></p>
 </footer>
 <script>
 "use strict";
-const SHOW_PREV_MS = 120000, FLASH_MS = 3000, STATUS_TIMEOUT_MS = 6000, STALE_AFTER_S = 30;
+const SHOW_PREV_MS = 3600000, FLASH_MS = 3000, STATUS_TIMEOUT_MS = 6000, STALE_AFTER_S = 30;
 const state = { games: [], status: null, statusAt: 0, connected: false, lastConfirmedWall: null,
   // "browser" mode: DraftKings blocks the REST snapshot from our server's IP, so the page
   // loads it straight from DraftKings and lays the server's live socket data on top.
@@ -114,7 +115,7 @@ function cellHtml(game, kind, side) {
               `<span class="main">${fmtOdds(o.american)}</span>` + (m.suspended ? `<span class="tag">SUSP</span>` : "");
   if (showPrev) {
     const lineChanged = o.prev_line != null && o.prev_line !== o.line;
-    html += `<span class="was">was ${lineChanged ? fmtLine(kind, side, o.prev_line) + " " : ""}${fmtOdds(o.prev_american)}</span>`;
+    html += `<span class="was">was ${lineChanged ? fmtLine(kind, side, o.prev_line) + " " : ""}${fmtOdds(o.prev_american)} · ${ago(now - o.changed_at)} ago</span>`;
   }
   return html;
 }
@@ -310,6 +311,12 @@ function renderStatus() {
   pill.textContent = problem && level === "bad" ? "STALE" : label;
   pill.className = "pill" + (problem && level === "bad" ? " bad" : s && s.state === "live" && !problem ? " live" : "");
   $("confirmed").textContent = confirmedAge != null ? `checked ${ago(confirmedAge)} ago` : "";
+  let last = null;
+  for (const g of state.games) for (const [kind, m] of Object.entries(g.markets))
+    for (const o of Object.values(m.outcomes)) if (o.changed_at && (!last || o.changed_at > last.t)) last = { t: o.changed_at, g, kind };
+  $("lastmove").textContent = last
+    ? `last line move ${ago(Math.max(0, (Date.now() + clockOffsetMs) / 1000 - last.t))} ago (${last.g.away} @ ${last.g.home}, ${last.kind})`
+    : (s && s.state === "live" ? "no line moves since the server started" : "");
   if (s) document.querySelector("h1").firstChild.textContent = s.source === "replay" ? "Replay: recorded live match " : "NFL odds ";
 }
 
