@@ -20,7 +20,7 @@ Other modes, no DraftKings access needed:
 ```
 SOURCE=replay   python -m app    # replays 5 min of a real recorded live match (DraftKings' original bytes)
 SOURCE=simulate python -m app    # fake NFL moves, suspensions and line moves, in DraftKings' wire format
-python -m pytest                 # 34 tests, all against captured DraftKings data or a fake DraftKings server
+python -m pytest                 # 34 tests, mostly against captured DraftKings data or a fake DraftKings server
 python scripts/probe.py --states IL,NJ   # can this machine reach DraftKings?
 ```
 
@@ -112,8 +112,8 @@ Measured from DraftKings' own timestamps on 721 live updates in the capture:
 | DraftKings internal (created to published) | 23 ms | 76 ms |
 | DraftKings published to socket send | 34 ms | 134 ms |
 | DraftKings published to our server: laptop in Japan via US VPN | 128 ms | 152 ms |
-| DraftKings published to our server: AWS | TODO from deploy | |
-| Our server to browser | TODO from deploy | |
+
+**AWS:** no NFL game was played between the deploy and the deadline, and pregame lines barely moved, so I don't have AWS numbers yet. The socket round trip from the EC2 instance to DraftKings is 19 to 36 ms, so "published to our server" should come in well under the laptop's 128 ms. Thursday Night Football (TB @ DAL) will be the deployed app's first live NFL game, and the page footer and `/health` will show the real numbers from then on.
 
 First live run (Oct 7, my laptop through the VPN, pointed at the tennis league because no NFL game was on): 114 socket updates in 6.5 minutes, every one applied, with 0 invalid rows, 0 out-of-order, 0 reconnects and 0 drift corrections. DraftKings' clock was 380 ms ahead of my laptop (±99 ms), which matches what the captures showed. The same build on the NFL board matched DraftKings' page line for line.
 
@@ -156,6 +156,8 @@ app/protocol.py   socket protocol: subscribe, decode, positional field mapping
 app/snapshot.py   REST fetch + normalize
 app/book.py       in-memory odds book: apply snapshot / updates, emit changes
 app/feed.py       live loop: subscribe, snapshot, buffer, heartbeat, reconnect, reconcile
+app/latency.py    latency tracking and DraftKings clock offset
+app/replay.py     SOURCE=replay; app/simulate.py SOURCE=simulate
 app/server.py     FastAPI: page, /api/odds, /api/stream (SSE), /health
 static/index.html the page
 fixtures/         real DraftKings captures used by tests and replay
@@ -165,6 +167,9 @@ deploy/           user-data.sh (unattended EC2 setup), systemd unit, Caddy confi
 
 ## How I used AI
 
-TODO: rewrite in your own words before submitting.
+I used Claude (Anthropic) for most of this, working in my own browser, terminal and AWS console.
 
-I captured DraftKings' traffic myself in DevTools (REST, socket frames, a live match) and chose the overall approach. I used Claude to decode the binary socket format from those captures, write most of the code and tests, and analyze the captures. Two findings came out of testing against the real data rather than assumptions: REST can lag the socket, and comparing DraftKings' clock with ours broke update ordering (caught by an integration test, then redesigned).
+- **What I did:** captured DraftKings' traffic in Chrome DevTools through a VPN (the NFL board, plus a live tennis match since no NFL game was on), picked Python and AWS, supplied the proxy when AWS got blocked, and checked the app's numbers against DraftKings' own page.
+- **What Claude did:** decoded the binary socket format from my captures, proposed the socket plus REST design, wrote most of the code, tests and this README, and did the AWS setup with me.
+- **What testing caught:** comparing DraftKings' clock with ours broke update ordering (an integration test caught it), and the live data showed REST lagging the socket, so the safety check now waits for two disagreements before correcting anything.
+- **What only showed up on deploy:** DraftKings blocks AWS for REST. The first fix (browsers load the board) didn't work for anyone outside the US, which is why the server now uses a proxy.
