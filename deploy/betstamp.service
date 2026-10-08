@@ -1,0 +1,17 @@
+[Unit]
+Description=DraftKings NFL odds
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=ubuntu
+WorkingDirectory=/home/ubuntu/betstamp
+Environment=PORT=8000
+Environment=HOST=127.0.0.1
+Environment=DK_STATE=IL
+ExecStart=/home/ubuntu/betstamp/.venv/bin/python -m app
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

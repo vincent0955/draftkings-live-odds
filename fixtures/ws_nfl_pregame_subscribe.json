@@ -1,0 +1,933 @@
+{
+ "url": "wss://sportsbook-ws-us-il.draftkings.com/websocket?format=msgpack&locale=en",
+ "frames": [
+  {
+   "dir": "send",
+   "t": 1791303649.233116,
+   "opcode": 2,
+   "raw_b64": "hKdqc29ucnBjozIuMKZwYXJhbXOGpmVudGl0eaZldmVudHOrcXVlcnlQYXJhbXOFpXF1ZXJ52W8kZmlsdGVyPWxlYWd1ZUlkIGVxICc4ODgwOCcgQU5EIGNsaWVudE1ldGFkYXRhL1N1YmNhdGVnb3JpZXMvYW55KHM6IHMvSWQgZXEgJzQ1MTgnKSBhbmQgdGFncy9hbnkodDogdCBlcSAnT1NCJymraW5pdGlhbERhdGHCqnByb2plY3Rpb26qc3BvcnRzYm9va6Zsb2NhbGWiZW6uaW5jbHVkZU1hcmtldHPZdiRmaWx0ZXI9Y2xpZW50TWV0YWRhdGEvc3ViQ2F0ZWdvcnlJZCBlcSAnNDUxOCcgQU5EIHRhZ3MvYWxsKHQ6IHQgbmUgJ1Nwb3J0Y2FzdEJldEJ1aWxkZXInKSBhbmQgdGFncy9hbnkodDogdCBlcSAnT1NCJymwZm9yd2FyZGVkSGVhZGVyc4CuY2xpZW50TWV0YWRhdGGDp2ZlYXR1cmWmbGVhZ3VlrVgtQ2xpZW50LU5hbWWjd2VisFgtQ2xpZW50LVZlcnNpb26qMjY0MC40LjEuOKNqd3StZGVmYXVsdC10b2tlbqhzaXRlTmFtZaZka3VzaWymbWV0aG9kqXN1YnNjcmliZaJpZNkkZTQxNmQ0MTUtYzA0OS00YTg4LTlhMmYtNzA4NjMwZmIzMzFk",
+   "decoded": {
+    "jsonrpc": "2.0",
+    "params": {
+     "entity": "events",
+     "queryParams": {
+      "query": "$filter=leagueId eq '88808' AND clientMetadata/Subcategories/any(s: s/Id eq '4518') and tags/any(t: t eq 'OSB')",
+      "initialData": false,
+      "projection": "sportsbook",
+      "locale": "en",
+      "includeMarkets": "$filter=clientMetadata/subCategoryId eq '4518' AND tags/all(t: t ne 'SportcastBetBuilder') and tags/any(t: t eq 'OSB')"
+     },
+     "forwardedHeaders": {},
+     "clientMetadata": {
+      "feature": "league",
+      "X-Client-Name": "web",
+      "X-Client-Version": "2640.4.1.8"
+     },
+     "jwt": "default-token",
+     "siteName": "dkusil"
+    },
+    "method": "subscribe",
+    "id": "e416d415-c049-4a88-9a2f-708630fb331d"
+   }
+  },
+  {
+   "dir": "receive",
+   "t": 1791303649.462584,
+   "opcode": 2,
+   "raw_b64": "ldkkZTQxNmQ0MTUtYzA0OS00YTg4LTlhMmYtNzA4NjMwZmIzMzFkqnN1YnNjcmliZWTAwJLX/x+fC0BqxR/jAA==",
+   "decoded": [
+    "e416d415-c049-4a88-9a2f-708630fb331d",
+    "subscribed",
+    null,
+    null,
+    [
+     {
+      "__ts__": 1791303651.1326292
+     },
+     0
+    ]
+   ]
+  },
+  {
+   "dir": "send",
+   "t": 1791303779.8697581,
+   "opcode": 2,
+   "raw_b64": "hKdqc29ucnBjozIuMKZwYXJhbXOApm1ldGhvZKt1bnN1YnNjcmliZaJpZNkkZTQxNmQ0MTUtYzA0OS00YTg4LTlhMmYtNzA4NjMwZmIzMzFk",
+   "decoded": {
+    "jsonrpc": "2.0",
+    "params": {},
+    "method": "unsubscribe",
+    "id": "e416d415-c049-4a88-9a2f-708630fb331d"
+   }
+  },
+  {
+   "dir": "receive",
+   "t": 1791303780.056005,
+   "opcode": 2,
+   "raw_b64": "ldkkZTQxNmQ0MTUtYzA0OS00YTg4LTlhMmYtNzA4NjMwZmIzMzFkq3Vuc3Vic2NyaWJlwMCS1/+2aSTAasUgZQA=",
+   "decoded": [
+    "e416d415-c049-4a88-9a2f-708630fb331d",
+    "unsubscribe",
+    null,
+    null,
+    [
+     {
+      "__ts__": 1791303781.765086
+     },
+     0
+    ]
+   ]
+  },
+  {
+   "dir": "send",
+   "t": 1791303781.817818,
+   "opcode": 2,
+   "raw_b64": "hKdqc29ucnBjozIuMKZwYXJhbXOGpmVudGl0eaZldmVudHOrcXVlcnlQYXJhbXOFpXF1ZXJ5uyRmaWx0ZXI9bGVhZ3VlSWQgZXEgJzg4ODA4J6tpbml0aWFsRGF0YcKuaW5jbHVkZU1hcmtldHOkbm9uZapwcm9qZWN0aW9uqnNwb3J0c2Jvb2umbG9jYWxlomVusGZvcndhcmRlZEhlYWRlcnOArmNsaWVudE1ldGFkYXRhg6dmZWF0dXJlpWV2ZW50rVgtQ2xpZW50LU5hbWWjd2VisFgtQ2xpZW50LVZlcnNpb26qMjY0MC40LjEuOKNqd3StZGVmYXVsdC10b2tlbqhzaXRlTmFtZaZka3VzaWymbWV0aG9kqXN1YnNjcmliZaJpZNkkNjE5NjlhYzctZGViMC00NmUzLWExZTAtMWE5NmJjZDZjODY1",
+   "decoded": {
+    "jsonrpc": "2.0",
+    "params": {
+     "entity": "events",
+     "queryParams": {
+      "query": "$filter=leagueId eq '88808'",
+      "initialData": false,
+      "includeMarkets": "none",
+      "projection": "sportsbook",
+      "locale": "en"
+     },
+     "forwardedHeaders": {},
+     "clientMetadata": {
+      "feature": "event",
+      "X-Client-Name": "web",
+      "X-Client-Version": "2640.4.1.8"
+     },
+     "jwt": "default-token",
+     "siteName": "dkusil"
+    },
+    "method": "subscribe",
+    "id": "61969ac7-deb0-46e3-a1e0-1a96bcd6c865"
+   }
+  },
+  {
+   "dir": "receive",
+   "t": 1791303782.003391,
+   "opcode": 2,
+   "raw_b64": "ldkkNjE5NjlhYzctZGViMC00NmUzLWExZTAtMWE5NmJjZDZjODY1qnN1YnNjcmliZWTAwJLX/6nmmTBqxSBnAA==",
+   "decoded": [
+    "61969ac7-deb0-46e3-a1e0-1a96bcd6c865",
+    "subscribed",
+    null,
+    null,
+    [
+     {
+      "__ts__": 1791303783.7126155
+     },
+     0
+    ]
+   ]
+  },
+  {
+   "dir": "send",
+   "t": 1791303782.142954,
+   "opcode": 2,
+   "raw_b64": "hKdqc29ucnBjozIuMKZwYXJhbXOGpmVudGl0eaZldmVudHOrcXVlcnlQYXJhbXOFpXF1ZXJ52U0kZmlsdGVyPWlkIGVxICczNDExODEzNycgYW5kIHRhZ3MgLyBhbnkodDogdCBlcSAnT1NCJykmJG9yZGVyQnk9c29ydE9yZGVyIGFzY6tpbml0aWFsRGF0YcKqcHJvamVjdGlvbqpzcG9ydHNib29rpmxvY2FsZaJlbq5pbmNsdWRlTWFya2V0c8CwZm9yd2FyZGVkSGVhZGVyc4CuY2xpZW50TWV0YWRhdGGDp2ZlYXR1cmWlZXZlbnStWC1DbGllbnQtTmFtZaN3ZWKwWC1DbGllbnQtVmVyc2lvbqoyNjQwLjQuMS44o2p3dK1kZWZhdWx0LXRva2VuqHNpdGVOYW1lpmRrdXNpbKZtZXRob2Spc3Vic2NyaWJlomlk2SQ3NjJmYmYyMi1jNTI5LTQyNWQtYWM4OC1jNDYzYTYxZDVmNzk=",
+   "decoded": {
+    "jsonrpc": "2.0",
+    "params": {
+     "entity": "events",
+     "queryParams": {
+      "query": "$filter=id eq '34118137' and tags / any(t: t eq 'OSB')&$orderBy=sortOrder asc",
+      "initialData": false,
+      "projection": "sportsbook",
+      "locale": "en",
+      "includeMarkets": null
+     },
+     "forwardedHeaders": {},
+     "clientMetadata": {
+      "feature": "event",
+      "X-Client-Name": "web",
+      "X-Client-Version": "2640.4.1.8"
+     },
+     "jwt": "default-token",
+     "siteName": "dkusil"
+    },
+    "method": "subscribe",
+    "id": "762fbf22-c529-425d-ac88-c463a61d5f79"
+   }
+  },
+  {
+   "dir": "receive",
+   "t": 1791303782.329283,
+   "opcode": 2,
+   "raw_b64": "ldkkNzYyZmJmMjItYzUyOS00MjVkLWFjODgtYzQ2M2E2MWQ1Zjc5qnN1YnNjcmliZWTAwJLX/wkxDUBqxSBoAA==",
+   "decoded": [
+    "762fbf22-c529-425d-ac88-c463a61d5f79",
+    "subscribed",
+    null,
+    null,
+    [
+     {
+      "__ts__": 1791303784.0385523
+     },
+     0
+    ]
+   ]
+  },
+  {
+   "dir": "send",
+   "t": 1791303782.593024,
+   "opcode": 2,
+   "raw_b64": "hKdqc29ucnBjozIuMKZwYXJhbXOGpmVudGl0eaxDb250ZW50Q2FyZHOrcXVlcnlQYXJhbXOCpXF1ZXJ52UwkZmlsdGVyPWNvbnRlbnRDYXJkVHlwZSBlcSAnYWxsJyBhbmQgZXZlbnRJZCBlcSAnMzQxMTgxMzcnIGFuZCB0YWdzIGVxICdPU0InpmxvY2FsZaJlbrBmb3J3YXJkZWRIZWFkZXJzgK5jbGllbnRNZXRhZGF0YYOnZmVhdHVyZaVldmVudK1YLUNsaWVudC1OYW1lo3dlYrBYLUNsaWVudC1WZXJzaW9uqjI2NDAuNC4xLjijand0rWRlZmF1bHQtdG9rZW6oc2l0ZU5hbWWmZGt1c2lspm1ldGhvZKlzdWJzY3JpYmWiaWTZJDRkYzc5MzYwLWYwNDEtNDdiMS1iMzg3LWRiZWY3MjM0NGE3MA==",
+   "decoded": {
+    "jsonrpc": "2.0",
+    "params": {
+     "entity": "ContentCards",
+     "queryParams": {
+      "query": "$filter=contentCardType eq 'all' and eventId eq '34118137' and tags eq 'OSB'",
+      "locale": "en"
+     },
+     "forwardedHeaders": {},
+     "clientMetadata": {
+      "feature": "event",
+      "X-Client-Name": "web",
+      "X-Client-Version": "2640.4.1.8"
+     },
+     "jwt": "default-token",
+     "siteName": "dkusil"
+    },
+    "method": "subscribe",
+    "id": "4dc79360-f041-47b1-b387-dbef72344a70"
+   }
+  },
+  {
+   "dir": "send",
+   "t": 1791303782.740565,
+   "opcode": 2,
+   "raw_b64": "hKdqc29ucnBjozIuMKZwYXJhbXOGpmVudGl0eadtYXJrZXRzq3F1ZXJ5UGFyYW1zhKVxdWVyedmQJGZpbHRlcj1ldmVudElkIGVxICczNDExODEzNycgQU5EIGNsaWVudE1ldGFkYXRhL3N1YkNhdGVnb3J5SWQgZXEgJzQ1MTgnIEFORCB0YWdzL2FsbCh0OiB0IG5lICdTcG9ydGNhc3RCZXRCdWlsZGVyJykgYW5kIHRhZ3MvYW55KHQ6IHQgZXEgJ09TQicpq2luaXRpYWxEYXRhwqpwcm9qZWN0aW9uqnNwb3J0c2Jvb2umbG9jYWxlomVusGZvcndhcmRlZEhlYWRlcnOArmNsaWVudE1ldGFkYXRhg6dmZWF0dXJlpWV2ZW50rVgtQ2xpZW50LU5hbWWjd2VisFgtQ2xpZW50LVZlcnNpb26qMjY0MC40LjEuOKNqd3StZGVmYXVsdC10b2tlbqhzaXRlTmFtZaZka3VzaWymbWV0aG9kqXN1YnNjcmliZaJpZNkkNzY2ZTJlNDgtYjc0Ni00ODJhLWI2NWYtZDFlNTIwMzM4NTUw",
+   "decoded": {
+    "jsonrpc": "2.0",
+    "params": {
+     "entity": "markets",
+     "queryParams": {
+      "query": "$filter=eventId eq '34118137' AND clientMetadata/subCategoryId eq '4518' AND tags/all(t: t ne 'SportcastBetBuilder') and tags/any(t: t eq 'OSB')",
+      "initialData": false,
+      "projection": "sportsbook",
+      "locale": "en"
+     },
+     "forwardedHeaders": {},
+     "clientMetadata": {
+      "feature": "event",
+      "X-Client-Name": "web",
+      "X-Client-Version": "2640.4.1.8"
+     },
+     "jwt": "default-token",
+     "siteName": "dkusil"
+    },
+    "method": "subscribe",
+    "id": "766e2e48-b746-482a-b65f-d1e520338550"
+   }
+  },
+  {
+   "dir": "send",
+   "t": 1791303782.781116,
+   "opcode": 2,
+   "raw_b64": "hKdqc29ucnBjozIuMKZwYXJhbXOGpmVudGl0eadtYXJrZXRzq3F1ZXJ5UGFyYW1zhKVxdWVyedmRJGZpbHRlcj1ldmVudElkIGVxICczNDExODEzNycgQU5EIGNsaWVudE1ldGFkYXRhL3N1YkNhdGVnb3J5SWQgZXEgJzEyNDM4JyBBTkQgdGFncy9hbGwodDogdCBuZSAnU3BvcnRjYXN0QmV0QnVpbGRlcicpIGFuZCB0YWdzL2FueSh0OiB0IGVxICdPU0InKatpbml0aWFsRGF0YcKqcHJvamVjdGlvbqpzcG9ydHNib29rpmxvY2FsZaJlbrBmb3J3YXJkZWRIZWFkZXJzgK5jbGllbnRNZXRhZGF0YYOnZmVhdHVyZaVldmVudK1YLUNsaWVudC1OYW1lo3dlYrBYLUNsaWVudC1WZXJzaW9uqjI2NDAuNC4xLjijand0rWRlZmF1bHQtdG9rZW6oc2l0ZU5hbWWmZGt1c2lspm1ldGhvZKlzdWJzY3JpYmWiaWTZJDM4NWFiNDIwLWNkMjktNDY5Yy04OTcwLTVkODk4YWY5ZGMyZQ==",
+   "decoded": {
+    "jsonrpc": "2.0",
+    "params": {
+     "entity": "markets",
+     "queryParams": {
+      "query": "$filter=eventId eq '34118137' AND clientMetadata/subCategoryId eq '12438' AND tags/all(t: t ne 'SportcastBetBuilder') and tags/any(t: t eq 'OSB')",
+      "initialData": false,
+      "projection": "sportsbook",
+      "locale": "en"
+     },
+     "forwardedHeaders": {},
+     "clientMetadata": {
+      "feature": "event",
+      "X-Client-Name": "web",
+      "X-Client-Version": "2640.4.1.8"
+     },
+     "jwt": "default-token",
+     "siteName": "dkusil"
+    },
+    "method": "subscribe",
+    "id": "385ab420-cd29-469c-8970-5d898af9dc2e"
+   }
+  },
+  {
+   "dir": "receive",
+   "t": 1791303782.800142,
+   "opcode": 2,
+   "raw_b64": "ldkkNGRjNzkzNjAtZjA0MS00N2IxLWIzODctZGJlZjcyMzQ0YTcwqnN1YnNjcmliZWTAwJLX/3Q+phBqxSBoAA==",
+   "decoded": [
+    "4dc79360-f041-47b1-b387-dbef72344a70",
+    "subscribed",
+    null,
+    null,
+    [
+     {
+      "__ts__": 1791303784.4875658
+     },
+     0
+    ]
+   ]
+  },
+  {
+   "dir": "receive",
+   "t": 1791303782.928199,
+   "opcode": 2,
+   "raw_b64": "ldkkNzY2ZTJlNDgtYjc0Ni00ODJhLWI2NWYtZDFlNTIwMzM4NTUwqnN1YnNjcmliZWTAwJLX/5d0UhBqxSBoAA==",
+   "decoded": [
+    "766e2e48-b746-482a-b65f-d1e520338550",
+    "subscribed",
+    null,
+    null,
+    [
+     {
+      "__ts__": 1791303784.6352458
+     },
+     0
+    ]
+   ]
+  },
+  {
+   "dir": "receive",
+   "t": 1791303782.970374,
+   "opcode": 2,
+   "raw_b64": "ldkkMzg1YWI0MjAtY2QyOS00NjljLTg5NzAtNWQ4OThhZjlkYzJlqnN1YnNjcmliZWTAwJLX/6EP+4BqxSBoAA==",
+   "decoded": [
+    "385ab420-cd29-469c-8970-5d898af9dc2e",
+    "subscribed",
+    null,
+    null,
+    [
+     {
+      "__ts__": 1791303784.6755447
+     },
+     0
+    ]
+   ]
+  },
+  {
+   "dir": "send",
+   "t": 1791303789.865776,
+   "opcode": 2,
+   "raw_b64": "hKdqc29ucnBjozIuMKZwYXJhbXOApm1ldGhvZKt1bnN1YnNjcmliZaJpZNkkNjE5NjlhYzctZGViMC00NmUzLWExZTAtMWE5NmJjZDZjODY1",
+   "decoded": {
+    "jsonrpc": "2.0",
+    "params": {},
+    "method": "unsubscribe",
+    "id": "61969ac7-deb0-46e3-a1e0-1a96bcd6c865"
+   }
+  },
+  {
+   "dir": "send",
+   "t": 1791303789.876251,
+   "opcode": 2,
+   "raw_b64": "hKdqc29ucnBjozIuMKZwYXJhbXOApm1ldGhvZKt1bnN1YnNjcmliZaJpZNkkNzYyZmJmMjItYzUyOS00MjVkLWFjODgtYzQ2M2E2MWQ1Zjc5",
+   "decoded": {
+    "jsonrpc": "2.0",
+    "params": {},
+    "method": "unsubscribe",
+    "id": "762fbf22-c529-425d-ac88-c463a61d5f79"
+   }
+  },
+  {
+   "dir": "send",
+   "t": 1791303789.877067,
+   "opcode": 2,
+   "raw_b64": "hKdqc29ucnBjozIuMKZwYXJhbXOApm1ldGhvZKt1bnN1YnNjcmliZaJpZNkkNzY2ZTJlNDgtYjc0Ni00ODJhLWI2NWYtZDFlNTIwMzM4NTUw",
+   "decoded": {
+    "jsonrpc": "2.0",
+    "params": {},
+    "method": "unsubscribe",
+    "id": "766e2e48-b746-482a-b65f-d1e520338550"
+   }
+  },
+  {
+   "dir": "send",
+   "t": 1791303789.877534,
+   "opcode": 2,
+   "raw_b64": "hKdqc29ucnBjozIuMKZwYXJhbXOApm1ldGhvZKt1bnN1YnNjcmliZaJpZNkkMzg1YWI0MjAtY2QyOS00NjljLTg5NzAtNWQ4OThhZjlkYzJl",
+   "decoded": {
+    "jsonrpc": "2.0",
+    "params": {},
+    "method": "unsubscribe",
+    "id": "385ab420-cd29-469c-8970-5d898af9dc2e"
+   }
+  },
+  {
+   "dir": "send",
+   "t": 1791303789.888451,
+   "opcode": 2,
+   "raw_b64": "hKdqc29ucnBjozIuMKZwYXJhbXOApm1ldGhvZKt1bnN1YnNjcmliZaJpZNkkNGRjNzkzNjAtZjA0MS00N2IxLWIzODctZGJlZjcyMzQ0YTcw",
+   "decoded": {
+    "jsonrpc": "2.0",
+    "params": {},
+    "method": "unsubscribe",
+    "id": "4dc79360-f041-47b1-b387-dbef72344a70"
+   }
+  },
+  {
+   "dir": "receive",
+   "t": 1791303790.053159,
+   "opcode": 2,
+   "raw_b64": "ldkkNjE5NjlhYzctZGViMC00NmUzLWExZTAtMWE5NmJjZDZjODY1q3Vuc3Vic2NyaWJlwMCS1/+1NYIQasUgbwA=",
+   "decoded": [
+    "61969ac7-deb0-46e3-a1e0-1a96bcd6c865",
+    "unsubscribe",
+    null,
+    null,
+    [
+     {
+      "__ts__": 1791303791.7600458
+     },
+     0
+    ]
+   ]
+  },
+  {
+   "dir": "receive",
+   "t": 1791303790.062217,
+   "opcode": 2,
+   "raw_b64": "ldkkNzYyZmJmMjItYzUyOS00MjVkLWFjODgtYzQ2M2E2MWQ1Zjc5q3Vuc3Vic2NyaWJlwMCS1/+31GaAasUgbwA=",
+   "decoded": [
+    "762fbf22-c529-425d-ac88-c463a61d5f79",
+    "unsubscribe",
+    null,
+    null,
+    [
+     {
+      "__ts__": 1791303791.7710376
+     },
+     0
+    ]
+   ]
+  },
+  {
+   "dir": "receive",
+   "t": 1791303790.062607,
+   "opcode": 2,
+   "raw_b64": "ldkkNzY2ZTJlNDgtYjc0Ni00ODJhLWI2NWYtZDFlNTIwMzM4NTUwq3Vuc3Vic2NyaWJlwMCS1/+31orwasUgbwA=",
+   "decoded": [
+    "766e2e48-b746-482a-b65f-d1e520338550",
+    "unsubscribe",
+    null,
+    null,
+    [
+     {
+      "__ts__": 1791303791.7710729
+     },
+     0
+    ]
+   ]
+  },
+  {
+   "dir": "receive",
+   "t": 1791303790.064006,
+   "opcode": 2,
+   "raw_b64": "ldkkMzg1YWI0MjAtY2QyOS00NjljLTg5NzAtNWQ4OThhZjlkYzJlq3Vuc3Vic2NyaWJlwMCS1/+37vBAasUgbwA=",
+   "decoded": [
+    "385ab420-cd29-469c-8970-5d898af9dc2e",
+    "unsubscribe",
+    null,
+    null,
+    [
+     {
+      "__ts__": 1791303791.7714725
+     },
+     0
+    ]
+   ]
+  },
+  {
+   "dir": "receive",
+   "t": 1791303790.073496,
+   "opcode": 2,
+   "raw_b64": "ldkkNGRjNzkzNjAtZjA0MS00N2IxLWIzODctZGJlZjcyMzQ0YTcwq3Vuc3Vic2NyaWJlwMCS1/+6lbqQasUgbwA=",
+   "decoded": [
+    "4dc79360-f041-47b1-b387-dbef72344a70",
+    "unsubscribe",
+    null,
+    null,
+    [
+     {
+      "__ts__": 1791303791.7825937
+     },
+     0
+    ]
+   ]
+  },
+  {
+   "dir": "send",
+   "t": 1791303791.015414,
+   "opcode": 2,
+   "raw_b64": "hKdqc29ucnBjozIuMKZwYXJhbXOGpmVudGl0eaZldmVudHOrcXVlcnlQYXJhbXOFpXF1ZXJ52W8kZmlsdGVyPWxlYWd1ZUlkIGVxICc4ODgwOCcgQU5EIGNsaWVudE1ldGFkYXRhL1N1YmNhdGVnb3JpZXMvYW55KHM6IHMvSWQgZXEgJzQ1MTgnKSBhbmQgdGFncy9hbnkodDogdCBlcSAnT1NCJymraW5pdGlhbERhdGHCqnByb2plY3Rpb26qc3BvcnRzYm9va6Zsb2NhbGWiZW6uaW5jbHVkZU1hcmtldHPZdiRmaWx0ZXI9Y2xpZW50TWV0YWRhdGEvc3ViQ2F0ZWdvcnlJZCBlcSAnNDUxOCcgQU5EIHRhZ3MvYWxsKHQ6IHQgbmUgJ1Nwb3J0Y2FzdEJldEJ1aWxkZXInKSBhbmQgdGFncy9hbnkodDogdCBlcSAnT1NCJymwZm9yd2FyZGVkSGVhZGVyc4CuY2xpZW50TWV0YWRhdGGDp2ZlYXR1cmWmbGVhZ3VlrVgtQ2xpZW50LU5hbWWjd2VisFgtQ2xpZW50LVZlcnNpb26qMjY0MC40LjEuOKNqd3StZGVmYXVsdC10b2tlbqhzaXRlTmFtZaZka3VzaWymbWV0aG9kqXN1YnNjcmliZaJpZNkkM2RjOTg0MWYtOTUzMi00MmQwLWJjMGYtZGFjNzgwYmY3ZGM5",
+   "decoded": {
+    "jsonrpc": "2.0",
+    "params": {
+     "entity": "events",
+     "queryParams": {
+      "query": "$filter=leagueId eq '88808' AND clientMetadata/Subcategories/any(s: s/Id eq '4518') and tags/any(t: t eq 'OSB')",
+      "initialData": false,
+      "projection": "sportsbook",
+      "locale": "en",
+      "includeMarkets": "$filter=clientMetadata/subCategoryId eq '4518' AND tags/all(t: t ne 'SportcastBetBuilder') and tags/any(t: t eq 'OSB')"
+     },
+     "forwardedHeaders": {},
+     "clientMetadata": {
+      "feature": "league",
+      "X-Client-Name": "web",
+      "X-Client-Version": "2640.4.1.8"
+     },
+     "jwt": "default-token",
+     "siteName": "dkusil"
+    },
+    "method": "subscribe",
+    "id": "3dc9841f-9532-42d0-bc0f-dac780bf7dc9"
+   }
+  },
+  {
+   "dir": "receive",
+   "t": 1791303791.202936,
+   "opcode": 2,
+   "raw_b64": "ldkkM2RjOTg0MWYtOTUzMi00MmQwLWJjMGYtZGFjNzgwYmY3ZGM5qnN1YnNjcmliZWTAwJLX/9lm28BqxSBwAA==",
+   "decoded": [
+    "3dc9841f-9532-42d0-bc0f-dac780bf7dc9",
+    "subscribed",
+    null,
+    null,
+    [
+     {
+      "__ts__": 1791303792.9118493
+     },
+     0
+    ]
+   ]
+  },
+  {
+   "dir": "send",
+   "t": 1791303833.361461,
+   "opcode": 2,
+   "raw_b64": "hKdqc29ucnBjozIuMKZwYXJhbXOApm1ldGhvZKt1bnN1YnNjcmliZaJpZNkkM2RjOTg0MWYtOTUzMi00MmQwLWJjMGYtZGFjNzgwYmY3ZGM5",
+   "decoded": {
+    "jsonrpc": "2.0",
+    "params": {},
+    "method": "unsubscribe",
+    "id": "3dc9841f-9532-42d0-bc0f-dac780bf7dc9"
+   }
+  },
+  {
+   "dir": "receive",
+   "t": 1791303833.555546,
+   "opcode": 2,
+   "raw_b64": "ldkkM2RjOTg0MWYtOTUzMi00MmQwLWJjMGYtZGFjNzgwYmY3ZGM5q3Vuc3Vic2NyaWJlwMCS1/8+nd1QasUgmwA=",
+   "decoded": [
+    "3dc9841f-9532-42d0-bc0f-dac780bf7dc9",
+    "unsubscribe",
+    null,
+    null,
+    [
+     {
+      "__ts__": 1791303835.2626333
+     },
+     0
+    ]
+   ]
+  },
+  {
+   "dir": "send",
+   "t": 1791303834.085002,
+   "opcode": 2,
+   "raw_b64": "hKdqc29ucnBjozIuMKZwYXJhbXOGpmVudGl0eaZldmVudHOrcXVlcnlQYXJhbXOFpXF1ZXJ5uyRmaWx0ZXI9bGVhZ3VlSWQgZXEgJzg4ODA4J6tpbml0aWFsRGF0YcKuaW5jbHVkZU1hcmtldHOkbm9uZapwcm9qZWN0aW9uqnNwb3J0c2Jvb2umbG9jYWxlomVusGZvcndhcmRlZEhlYWRlcnOArmNsaWVudE1ldGFkYXRhg6dmZWF0dXJlpWV2ZW50rVgtQ2xpZW50LU5hbWWjd2VisFgtQ2xpZW50LVZlcnNpb26qMjY0MC40LjEuOKNqd3StZGVmYXVsdC10b2tlbqhzaXRlTmFtZaZka3VzaWymbWV0aG9kqXN1YnNjcmliZaJpZNkkOWMxNTM3ZTItZDBhZC00NGNmLTgxYTgtYjMxMDE1ODM0MDRl",
+   "decoded": {
+    "jsonrpc": "2.0",
+    "params": {
+     "entity": "events",
+     "queryParams": {
+      "query": "$filter=leagueId eq '88808'",
+      "initialData": false,
+      "includeMarkets": "none",
+      "projection": "sportsbook",
+      "locale": "en"
+     },
+     "forwardedHeaders": {},
+     "clientMetadata": {
+      "feature": "event",
+      "X-Client-Name": "web",
+      "X-Client-Version": "2640.4.1.8"
+     },
+     "jwt": "default-token",
+     "siteName": "dkusil"
+    },
+    "method": "subscribe",
+    "id": "9c1537e2-d0ad-44cf-81a8-b3101583404e"
+   }
+  },
+  {
+   "dir": "send",
+   "t": 1791303834.240433,
+   "opcode": 2,
+   "raw_b64": "hKdqc29ucnBjozIuMKZwYXJhbXOGpmVudGl0eaxDb250ZW50Q2FyZHOrcXVlcnlQYXJhbXOCpXF1ZXJ52UwkZmlsdGVyPWNvbnRlbnRDYXJkVHlwZSBlcSAnYWxsJyBhbmQgZXZlbnRJZCBlcSAnMzQxMTgxMzcnIGFuZCB0YWdzIGVxICdPU0InpmxvY2FsZaJlbrBmb3J3YXJkZWRIZWFkZXJzgK5jbGllbnRNZXRhZGF0YYOnZmVhdHVyZaVldmVudK1YLUNsaWVudC1OYW1lo3dlYrBYLUNsaWVudC1WZXJzaW9uqjI2NDAuNC4xLjijand0rWRlZmF1bHQtdG9rZW6oc2l0ZU5hbWWmZGt1c2lspm1ldGhvZKlzdWJzY3JpYmWiaWTZJDc2ODY1ZTlmLWJlZjctNDA1OC1iYjMzLTk0MzhiNzI0MDRhZg==",
+   "decoded": {
+    "jsonrpc": "2.0",
+    "params": {
+     "entity": "ContentCards",
+     "queryParams": {
+      "query": "$filter=contentCardType eq 'all' and eventId eq '34118137' and tags eq 'OSB'",
+      "locale": "en"
+     },
+     "forwardedHeaders": {},
+     "clientMetadata": {
+      "feature": "event",
+      "X-Client-Name": "web",
+      "X-Client-Version": "2640.4.1.8"
+     },
+     "jwt": "default-token",
+     "siteName": "dkusil"
+    },
+    "method": "subscribe",
+    "id": "76865e9f-bef7-4058-bb33-9438b72404af"
+   }
+  },
+  {
+   "dir": "receive",
+   "t": 1791303834.328578,
+   "opcode": 2,
+   "raw_b64": "ldkkOWMxNTM3ZTItZDBhZC00NGNmLTgxYTgtYjMxMDE1ODM0MDRlqnN1YnNjcmliZWTAwJLX/+kjTpBqxSCbAA==",
+   "decoded": [
+    "9c1537e2-d0ad-44cf-81a8-b3101583404e",
+    "subscribed",
+    null,
+    null,
+    [
+     {
+      "__ts__": 1791303835.9778514
+     },
+     0
+    ]
+   ]
+  },
+  {
+   "dir": "receive",
+   "t": 1791303834.463233,
+   "opcode": 2,
+   "raw_b64": "ldkkNzY4NjVlOWYtYmVmNy00MDU4LWJiMzMtOTQzOGI3MjQwNGFmqnN1YnNjcmliZWTAwJLX/x/IRfBqxSCcAA==",
+   "decoded": [
+    "76865e9f-bef7-4058-bb33-9438b72404af",
+    "subscribed",
+    null,
+    null,
+    [
+     {
+      "__ts__": 1791303836.1333046
+     },
+     0
+    ]
+   ]
+  },
+  {
+   "dir": "send",
+   "t": 1791303834.513132,
+   "opcode": 2,
+   "raw_b64": "hKdqc29ucnBjozIuMKZwYXJhbXOGpmVudGl0eaZldmVudHOrcXVlcnlQYXJhbXOFpXF1ZXJ52U0kZmlsdGVyPWlkIGVxICczNDExODEzNycgYW5kIHRhZ3MgLyBhbnkodDogdCBlcSAnT1NCJykmJG9yZGVyQnk9c29ydE9yZGVyIGFzY6tpbml0aWFsRGF0YcKqcHJvamVjdGlvbqpzcG9ydHNib29rpmxvY2FsZaJlbq5pbmNsdWRlTWFya2V0c8CwZm9yd2FyZGVkSGVhZGVyc4CuY2xpZW50TWV0YWRhdGGDp2ZlYXR1cmWlZXZlbnStWC1DbGllbnQtTmFtZaN3ZWKwWC1DbGllbnQtVmVyc2lvbqoyNjQwLjQuMS44o2p3dK1kZWZhdWx0LXRva2VuqHNpdGVOYW1lpmRrdXNpbKZtZXRob2Spc3Vic2NyaWJlomlk2SRmODNmMmE2ZS0wMTMwLTQ4MTAtODcxMC1iMDNjMDVhYWZjYWI=",
+   "decoded": {
+    "jsonrpc": "2.0",
+    "params": {
+     "entity": "events",
+     "queryParams": {
+      "query": "$filter=id eq '34118137' and tags / any(t: t eq 'OSB')&$orderBy=sortOrder asc",
+      "initialData": false,
+      "projection": "sportsbook",
+      "locale": "en",
+      "includeMarkets": null
+     },
+     "forwardedHeaders": {},
+     "clientMetadata": {
+      "feature": "event",
+      "X-Client-Name": "web",
+      "X-Client-Version": "2640.4.1.8"
+     },
+     "jwt": "default-token",
+     "siteName": "dkusil"
+    },
+    "method": "subscribe",
+    "id": "f83f2a6e-0130-4810-8710-b03c05aafcab"
+   }
+  },
+  {
+   "dir": "send",
+   "t": 1791303834.5132241,
+   "opcode": 2,
+   "raw_b64": "hKdqc29ucnBjozIuMKZwYXJhbXOGpmVudGl0eadtYXJrZXRzq3F1ZXJ5UGFyYW1zhKVxdWVyedmQJGZpbHRlcj1ldmVudElkIGVxICczNDExODEzNycgQU5EIGNsaWVudE1ldGFkYXRhL3N1YkNhdGVnb3J5SWQgZXEgJzQ1MTgnIEFORCB0YWdzL2FsbCh0OiB0IG5lICdTcG9ydGNhc3RCZXRCdWlsZGVyJykgYW5kIHRhZ3MvYW55KHQ6IHQgZXEgJ09TQicpq2luaXRpYWxEYXRhwqpwcm9qZWN0aW9uqnNwb3J0c2Jvb2umbG9jYWxlomVusGZvcndhcmRlZEhlYWRlcnOArmNsaWVudE1ldGFkYXRhg6dmZWF0dXJlpWV2ZW50rVgtQ2xpZW50LU5hbWWjd2VisFgtQ2xpZW50LVZlcnNpb26qMjY0MC40LjEuOKNqd3StZGVmYXVsdC10b2tlbqhzaXRlTmFtZaZka3VzaWymbWV0aG9kqXN1YnNjcmliZaJpZNkkNjA3NDZiZTEtNmFlMy00M2I3LWE1ZWQtNzAyNjAzZTU2M2Iz",
+   "decoded": {
+    "jsonrpc": "2.0",
+    "params": {
+     "entity": "markets",
+     "queryParams": {
+      "query": "$filter=eventId eq '34118137' AND clientMetadata/subCategoryId eq '4518' AND tags/all(t: t ne 'SportcastBetBuilder') and tags/any(t: t eq 'OSB')",
+      "initialData": false,
+      "projection": "sportsbook",
+      "locale": "en"
+     },
+     "forwardedHeaders": {},
+     "clientMetadata": {
+      "feature": "event",
+      "X-Client-Name": "web",
+      "X-Client-Version": "2640.4.1.8"
+     },
+     "jwt": "default-token",
+     "siteName": "dkusil"
+    },
+    "method": "subscribe",
+    "id": "60746be1-6ae3-43b7-a5ed-702603e563b3"
+   }
+  },
+  {
+   "dir": "send",
+   "t": 1791303834.513272,
+   "opcode": 2,
+   "raw_b64": "hKdqc29ucnBjozIuMKZwYXJhbXOGpmVudGl0eadtYXJrZXRzq3F1ZXJ5UGFyYW1zhKVxdWVyedmRJGZpbHRlcj1ldmVudElkIGVxICczNDExODEzNycgQU5EIGNsaWVudE1ldGFkYXRhL3N1YkNhdGVnb3J5SWQgZXEgJzEyNDM4JyBBTkQgdGFncy9hbGwodDogdCBuZSAnU3BvcnRjYXN0QmV0QnVpbGRlcicpIGFuZCB0YWdzL2FueSh0OiB0IGVxICdPU0InKatpbml0aWFsRGF0YcKqcHJvamVjdGlvbqpzcG9ydHNib29rpmxvY2FsZaJlbrBmb3J3YXJkZWRIZWFkZXJzgK5jbGllbnRNZXRhZGF0YYOnZmVhdHVyZaVldmVudK1YLUNsaWVudC1OYW1lo3dlYrBYLUNsaWVudC1WZXJzaW9uqjI2NDAuNC4xLjijand0rWRlZmF1bHQtdG9rZW6oc2l0ZU5hbWWmZGt1c2lspm1ldGhvZKlzdWJzY3JpYmWiaWTZJGZiZjdlYzFlLTBkYjMtNDRjMS04MWVkLTE3MGNhNDRkNmQ2YQ==",
+   "decoded": {
+    "jsonrpc": "2.0",
+    "params": {
+     "entity": "markets",
+     "queryParams": {
+      "query": "$filter=eventId eq '34118137' AND clientMetadata/subCategoryId eq '12438' AND tags/all(t: t ne 'SportcastBetBuilder') and tags/any(t: t eq 'OSB')",
+      "initialData": false,
+      "projection": "sportsbook",
+      "locale": "en"
+     },
+     "forwardedHeaders": {},
+     "clientMetadata": {
+      "feature": "event",
+      "X-Client-Name": "web",
+      "X-Client-Version": "2640.4.1.8"
+     },
+     "jwt": "default-token",
+     "siteName": "dkusil"
+    },
+    "method": "subscribe",
+    "id": "fbf7ec1e-0db3-44c1-81ed-170ca44d6d6a"
+   }
+  },
+  {
+   "dir": "receive",
+   "t": 1791303834.698407,
+   "opcode": 2,
+   "raw_b64": "ldkkZjgzZjJhNmUtMDEzMC00ODEwLTg3MTAtYjAzYzA1YWFmY2FiqnN1YnNjcmliZWTAwJLX/2DX4eBqxSCcAA==",
+   "decoded": [
+    "f83f2a6e-0130-4810-8710-b03c05aafcab",
+    "subscribed",
+    null,
+    null,
+    [
+     {
+      "__ts__": 1791303836.4061902
+     },
+     0
+    ]
+   ]
+  },
+  {
+   "dir": "receive",
+   "t": 1791303834.698796,
+   "opcode": 2,
+   "raw_b64": "ldkkNjA3NDZiZTEtNmFlMy00M2I3LWE1ZWQtNzAyNjAzZTU2M2IzqnN1YnNjcmliZWTAwJLX/2DfVbBqxSCcAA==",
+   "decoded": [
+    "60746be1-6ae3-43b7-a5ed-702603e563b3",
+    "subscribed",
+    null,
+    null,
+    [
+     {
+      "__ts__": 1791303836.4063122
+     },
+     0
+    ]
+   ]
+  },
+  {
+   "dir": "receive",
+   "t": 1791303834.699239,
+   "opcode": 2,
+   "raw_b64": "ldkkZmJmN2VjMWUtMGRiMy00NGMxLTgxZWQtMTcwY2E0NGQ2ZDZhqnN1YnNjcmliZWTAwJLX/2DsYMBqxSCcAA==",
+   "decoded": [
+    "fbf7ec1e-0db3-44c1-81ed-170ca44d6d6a",
+    "subscribed",
+    null,
+    null,
+    [
+     {
+      "__ts__": 1791303836.4065259
+     },
+     0
+    ]
+   ]
+  },
+  {
+   "dir": "receive",
+   "t": 1791303839.978251,
+   "opcode": 2,
+   "raw_b64": "ldkkNzY4NjVlOWYtYmVmNy00MDU4LWJiMzMtOTQzOGI3MjQwNGFmpnVwZGF0ZZLAlMCQkZbA2VIzMzQzYWZjNC00MGVjLTRmNjgtYWE2Ny01ZGIwOGNlOTFmMTJfNWYwNmFlNjItMmVjMC00N2I4LWJkOWYtNzYxMjg0OTMzYTJlXzM0MTE4MTM3wJGdwNkvMFFBMzU3NDA4NzkzIzIzMDk2MTIxMTBfMTNMODg4MDhRMTE1NTY2NTI1NTNRMjCsVG9TY29yZUZpcnN0u0NlZURlZSBMYW1iIEZpcnN0IFREIFNjb3JlcqEzpTg4ODA4qDM0MTE4MTM3qTM1NzQwODc5M8DCwJGYwKY0ODU0NTCmUGxheWVypTE4MzM2wMLAwMKWwKQrNjAwpDcuMDCjNi8xozE0JaU3LjAweMKQwJLX/6NI/rBqxSChAA==",
+   "decoded": [
+    "76865e9f-bef7-4058-bb33-9438b72404af",
+    "update",
+    [
+     null,
+     [
+      null,
+      [],
+      [
+       [
+        null,
+        "3343afc4-40ec-4f68-aa67-5db08ce91f12_5f06ae62-2ec0-47b8-bd9f-761284933a2e_34118137",
+        null,
+        [
+         [
+          null,
+          "0QA357408793#2309612110_13L88808Q11556652553Q20",
+          "ToScoreFirst",
+          "CeeDee Lamb First TD Scorer",
+          "3",
+          "88808",
+          "34118137",
+          "357408793",
+          null,
+          false,
+          null,
+          [
+           [
+            null,
+            "485450",
+            "Player",
+            "18336",
+            null,
+            false,
+            null,
+            null
+           ]
+          ],
+          false
+         ]
+        ],
+        [
+         null,
+         "+600",
+         "7.00",
+         "6/1",
+         "14%",
+         "7.00x"
+        ],
+        false
+       ]
+      ],
+      []
+     ]
+    ],
+    null,
+    [
+     {
+      "__ts__": 1791303841.6848676
+     },
+     0
+    ]
+   ]
+  },
+  {
+   "dir": "receive",
+   "t": 1791303870.378392,
+   "opcode": 2,
+   "raw_b64": "ldkkNzY4NjVlOWYtYmVmNy00MDU4LWJiMzMtOTQzOGI3MjQwNGFmpnVwZGF0ZZLAlMCQkZbA2S1iODNkNWZkNS0xZDMzLTRiODQtOWYzNC03YmNlNWEyZTNhNDRfMzQxMTgxMzfAkp3A2S8wUUEzNzYxMTM0MDYjMjMwOTYxMjAyMl8xM0w4ODgwOFExMjAxMDkyMTUzMFEyMMDZLTM1KyBKYWxvbiBEYW5pZWxzIFBhc3NpbmcgWWFyZHMgLSAxc3QgUXVhcnRlcqEzpTg4ODA4qDM0MTE4MTM3qTM3NjExMzQwNsDDwJGYwKY5NTc4MTamUGxheWVypTE4NDc0wMLAwMKdwNkwMFFBMzc2MTEzMzg2IzIzMDk2MTE3MjVfMTNMODg4MDhRMS0yMDY5ODQ0OTYyUTIwwNkgMTgwKyBKYWxvbiBEYW5pZWxzIFBhc3NpbmcgWWFyZHOhM6U4ODgwOKgzNDExODEzN6kzNzYxMTMzODbAw8CRmMCmOTU3ODE2plBsYXllcqUxODQ3NMDCwMDClsCkKzE3NKQyLjc0pTg3LzUwpTM2LjQlpTIuNzR4wpDAktf/FECuIGrFIMAA",
+   "decoded": [
+    "76865e9f-bef7-4058-bb33-9438b72404af",
+    "update",
+    [
+     null,
+     [
+      null,
+      [],
+      [
+       [
+        null,
+        "b83d5fd5-1d33-4b84-9f34-7bce5a2e3a44_34118137",
+        null,
+        [
+         [
+          null,
+          "0QA376113406#2309612022_13L88808Q12010921530Q20",
+          null,
+          "35+ Jalon Daniels Passing Yards - 1st Quarter",
+          "3",
+          "88808",
+          "34118137",
+          "376113406",
+          null,
+          true,
+          null,
+          [
+           [
+            null,
+            "957816",
+            "Player",
+            "18474",
+            null,
+            false,
+            null,
+            null
+           ]
+          ],
+          false
+         ],
+         [
+          null,
+          "0QA376113386#2309611725_13L88808Q1-2069844962Q20",
+          null,
+          "180+ Jalon Daniels Passing Yards",
+          "3",
+          "88808",
+          "34118137",
+          "376113386",
+          null,
+          true,
+          null,
+          [
+           [
+            null,
+            "957816",
+            "Player",
+            "18474",
+            null,
+            false,
+            null,
+            null
+           ]
+          ],
+          false
+         ]
+        ],
+        [
+         null,
+         "+174",
+         "2.74",
+         "87/50",
+         "36.4%",
+         "2.74x"
+        ],
+        false
+       ]
+      ],
+      []
+     ]
+    ],
+    null,
+    [
+     {
+      "__ts__": 1791303872.084946
+     },
+     0
+    ]
+   ]
+  }
+ ]
+}

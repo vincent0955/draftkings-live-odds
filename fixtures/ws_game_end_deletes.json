@@ -1,0 +1,2587 @@
+{
+ "note": "KBO games ending: event, market, selection deletes",
+ "sockets": [
+  {
+   "url": "wss://sportsbook-ws-us-il.draftkings.com/websocket?format=msgpack&locale=en",
+   "frames": [
+    {
+     "dir": "send",
+     "t": 1791377931.8100152,
+     "opcode": 2,
+     "bytes": 565,
+     "raw_b64": "hKdqc29ucnBjozIuMKZwYXJhbXOGpmVudGl0eaZldmVudHOrcXVlcnlQYXJhbXOFpXF1ZXJ52ZMkZmlsdGVyPXRhZ3MgLyBhbnkodDogdCBlcSAnRmVhdHVyZWRTdWJjYXRlZ29yeScpIGFuZCBpc0xpdmUgZXEgdHJ1ZSBhbmQgY2xpZW50TWV0YWRhdGEvU3ViY2F0ZWdvcmllcy9hbnkoczogcy9JZCBlcSAnNDUxOScpJiRvcmRlckJ5PXNvcnRPcmRlciBhc2OraW5pdGlhbERhdGHCrmluY2x1ZGVNYXJrZXRz2XIkZmlsdGVyPWNsaWVudE1ldGFkYXRhL3N1YkNhdGVnb3J5SWQgZXEgJzQ1MTknIGFuZCB0YWdzL2FueSh0OiB0IGVxICdGZWF0dXJlZFN1YmNhdGVnb3J5JykgYW5kIGxlYWd1ZUlkIGVxICczNjM5NSeqcHJvamVjdGlvbqpzcG9ydHNib29rpmxvY2FsZaJlbrBmb3J3YXJkZWRIZWFkZXJzgK5jbGllbnRNZXRhZGF0YYOnZmVhdHVyZaVldmVudK1YLUNsaWVudC1OYW1lo3dlYrBYLUNsaWVudC1WZXJzaW9uqjI2NDAuNC4xLjijand0rWRlZmF1bHQtdG9rZW6oc2l0ZU5hbWWmZGt1c2lspm1ldGhvZKlzdWJzY3JpYmWiaWTZJGY1MmVlZTNlLTdlYjctNGQ3ZS04NGU3LTljYTI3OTdhZjJmYw==",
+     "decoded": {
+      "jsonrpc": "2.0",
+      "params": {
+       "entity": "events",
+       "queryParams": {
+        "query": "$filter=tags / any(t: t eq 'FeaturedSubcategory') and isLive eq true and clientMetadata/Subcategories/any(s: s/Id eq '4519')&$orderBy=sortOrder asc",
+        "initialData": false,
+        "includeMarkets": "$filter=clientMetadata/subCategoryId eq '4519' and tags/any(t: t eq 'FeaturedSubcategory') and leagueId eq '36395'",
+        "projection": "sportsbook",
+        "locale": "en"
+       },
+       "forwardedHeaders": {},
+       "clientMetadata": {
+        "feature": "event",
+        "X-Client-Name": "web",
+        "X-Client-Version": "2640.4.1.8"
+       },
+       "jwt": "default-token",
+       "siteName": "dkusil"
+      },
+      "method": "subscribe",
+      "id": "f52eee3e-7eb7-4d7e-84e7-9ca2797af2fc"
+     }
+    },
+    {
+     "dir": "receive",
+     "t": 1791377932.1380522,
+     "opcode": 2,
+     "bytes": 64,
+     "raw_b64": "ldkkZjUyZWVlM2UtN2ViNy00ZDdlLTg0ZTctOWNhMjc5N2FmMmZjqnN1YnNjcmliZWTAwJLX/1nTA3BqxkIMAA==",
+     "decoded": [
+      "f52eee3e-7eb7-4d7e-84e7-9ca2797af2fc",
+      "subscribed",
+      null,
+      null,
+      [
+       {
+        "__ts__": 1791377932.3767502
+       },
+       0
+      ]
+     ]
+    },
+    {
+     "dir": "receive",
+     "t": 1791377934.28833,
+     "opcode": 2,
+     "bytes": 895,
+     "raw_b64": "ldkkZjUyZWVlM2UtN2ViNy00ZDdlLTg0ZTctOWNhMjc5N2FmMmZjpnVwZGF0ZZOTlZCQkJCQk5CQkJORkhaaqDM0Nzg3NTUz1v9qxhFikpqmNDg2NDI1rExvdHRlIEdpYW50c6RIb21lpFRlYW2CrXJvc2V0dGFUZWFtSWSmNDg2NDI1r3Jvc2V0dGFUZWFtTmFtZaZHaWFudHMCpkdpYW50c5DColpamqY0ODYzMjCqS0lBIFRpZ2Vyc6RBd2F5pFRlYW2CrXJvc2V0dGFUZWFtSWSmNDg2MzIwr3Jvc2V0dGFUZWFtTmFtZaZUaWdlcnMBplRpZ2Vyc5DColpap1NUQVJURUSVozl0aMDCwsCTmMChVM5/////ojEyoTTAg6dvblNlcnZloTGsYmFzZWJhbGxCYXNloTCsYmFzZWJhbGxPdXRzoTDAmpfAoTEBoTGhMMDAl8ChMgKhMKEwwMCXwKEzA6EwoTLAwJfAoTQEoTShMMDAl8ChNQWhMKExwMCXwKE2BqEwoTHAwJfAoTcHoTChMMDAl8ChOAihN6EwwMCXwKE5CaEwoTDAwJfAoVTOf////6IxMqE0wIOnb25TZXJ2ZaExrGJhc2ViYWxsQmFzZaEwrGJhc2ViYWxsT3V0c6EwAZmzRmVhdHVyZWRTdWJjYXRlZ29yea1MaXZlU3RyZWFtaW5nrE1hdGNoVHJhY2tlcqNPU0KjU0dQqlNjb3JlYm9hcmSuU2dwRHluYW1pY09kZHOlU3RhdHOvWW91ckJldEVsaWdpYmxlgq5tYXN0ZXJMZWFndWVJZKQxNTk0rW51bWJlck9mUGFydHOhOc4O8B0Nl8CToTSiMTKhUpmToTChMaExk6EwoTChMpOhMqEwoTOToTChNKE0k6ExoTChNZOhMaEwoTaToTChMKE3k6EwoTehOJOhMKEwoTnAwJGToTChMKFIhaVhdEJhdKRob21lpWJhbGxzoTClYmFzZXOjMDAwpG91dHOhMKdzdHJpa2VzoTCQkMCDq2NyZWF0ZWRUaW1luDIwMjYtMTAtMDdUMTI6NTg6NTQuNjIyWqxyZWNlaXZlZFRpbWW4MjAyNi0xMC0wN1QxMjo1ODo1NC42MzBarXB1Ymxpc2hlZFRpbWW4MjAyNi0xMC0wN1QxMjo1ODo1NC42MzRawJLX/54ImqBqxkIOAA==",
+     "decoded": [
+      "f52eee3e-7eb7-4d7e-84e7-9ca2797af2fc",
+      "update",
+      [
+       [
+        [
+         [],
+         [],
+         [],
+         [],
+         []
+        ],
+        [
+         [],
+         [],
+         []
+        ],
+        [
+         [
+          [
+           22,
+           [
+            "34787553",
+            {
+             "__ts__": 1791365474.0
+            },
+            [
+             [
+              "486425",
+              "Lotte Giants",
+              "Home",
+              "Team",
+              {
+               "rosettaTeamId": "486425",
+               "rosettaTeamName": "Giants"
+              },
+              2,
+              "Giants",
+              [],
+              false,
+              "ZZ"
+             ],
+             [
+              "486320",
+              "KIA Tigers",
+              "Away",
+              "Team",
+              {
+               "rosettaTeamId": "486320",
+               "rosettaTeamName": "Tigers"
+              },
+              1,
+              "Tigers",
+              [],
+              false,
+              "ZZ"
+             ]
+            ],
+            "STARTED",
+            [
+             "9th",
+             null,
+             false,
+             false,
+             null
+            ],
+            [
+             [
+              null,
+              "T",
+              2147483647,
+              "12",
+              "4",
+              null,
+              {
+               "onServe": "1",
+               "baseballBase": "0",
+               "baseballOuts": "0"
+              },
+              null
+             ],
+             [
+              [
+               null,
+               "1",
+               1,
+               "1",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "2",
+               2,
+               "0",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "3",
+               3,
+               "0",
+               "2",
+               null,
+               null
+              ],
+              [
+               null,
+               "4",
+               4,
+               "4",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "5",
+               5,
+               "0",
+               "1",
+               null,
+               null
+              ],
+              [
+               null,
+               "6",
+               6,
+               "0",
+               "1",
+               null,
+               null
+              ],
+              [
+               null,
+               "7",
+               7,
+               "0",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "8",
+               8,
+               "7",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "9",
+               9,
+               "0",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "T",
+               2147483647,
+               "12",
+               "4",
+               null,
+               {
+                "onServe": "1",
+                "baseballBase": "0",
+                "baseballOuts": "0"
+               }
+              ]
+             ],
+             1
+            ],
+            [
+             "FeaturedSubcategory",
+             "LiveStreaming",
+             "MatchTracker",
+             "OSB",
+             "SGP",
+             "Scoreboard",
+             "SgpDynamicOdds",
+             "Stats",
+             "YourBetEligible"
+            ],
+            {
+             "masterLeagueId": "1594",
+             "numberOfParts": "9"
+            },
+            250617101,
+            [
+             null,
+             [
+              "4",
+              "12",
+              "R"
+             ],
+             [
+              [
+               "0",
+               "1",
+               "1"
+              ],
+              [
+               "0",
+               "0",
+               "2"
+              ],
+              [
+               "2",
+               "0",
+               "3"
+              ],
+              [
+               "0",
+               "4",
+               "4"
+              ],
+              [
+               "1",
+               "0",
+               "5"
+              ],
+              [
+               "1",
+               "0",
+               "6"
+              ],
+              [
+               "0",
+               "0",
+               "7"
+              ],
+              [
+               "0",
+               "7",
+               "8"
+              ],
+              [
+               "0",
+               "0",
+               "9"
+              ]
+             ],
+             null,
+             null,
+             [
+              [
+               "0",
+               "0",
+               "H"
+              ]
+             ],
+             {
+              "atBat": "home",
+              "balls": "0",
+              "bases": "000",
+              "outs": "0",
+              "strikes": "0"
+             }
+            ]
+           ]
+          ]
+         ],
+         [],
+         []
+        ]
+       ],
+       null,
+       {
+        "createdTime": "2026-10-07T12:58:54.622Z",
+        "receivedTime": "2026-10-07T12:58:54.630Z",
+        "publishedTime": "2026-10-07T12:58:54.634Z"
+       }
+      ],
+      null,
+      [
+       {
+        "__ts__": 1791377934.662841
+       },
+       0
+      ]
+     ]
+    },
+    {
+     "dir": "receive",
+     "t": 1791377934.289175,
+     "opcode": 2,
+     "bytes": 202,
+     "raw_b64": "ldkkZjUyZWVlM2UtN2ViNy00ZDdlLTg0ZTctOWNhMjc5N2FmMmZjpnVwZGF0ZZOTlZCQkJCQk5CRqjNfODY2MjcyMDKQk5CQkMCDq2NyZWF0ZWRUaW1luDIwMjYtMTAtMDdUMTI6NTg6NTQuNjI0WqxyZWNlaXZlZFRpbWW4MjAyNi0xMC0wN1QxMjo1ODo1NC42MzFarXB1Ymxpc2hlZFRpbWW4MjAyNi0xMC0wN1QxMjo1ODo1NC42MzZawJLX/54JUXBqxkIOAA==",
+     "decoded": [
+      "f52eee3e-7eb7-4d7e-84e7-9ca2797af2fc",
+      "update",
+      [
+       [
+        [
+         [],
+         [],
+         [],
+         [],
+         []
+        ],
+        [
+         [],
+         [
+          "3_86627202"
+         ],
+         []
+        ],
+        [
+         [],
+         [],
+         []
+        ]
+       ],
+       null,
+       {
+        "createdTime": "2026-10-07T12:58:54.624Z",
+        "receivedTime": "2026-10-07T12:58:54.631Z",
+        "publishedTime": "2026-10-07T12:58:54.636Z"
+       }
+      ],
+      null,
+      [
+       {
+        "__ts__": 1791377934.6628525
+       },
+       0
+      ]
+     ]
+    },
+    {
+     "dir": "receive",
+     "t": 1791377934.2895842,
+     "opcode": 2,
+     "bytes": 210,
+     "raw_b64": "ldkkZjUyZWVlM2UtN2ViNy00ZDdlLTg0ZTctOWNhMjc5N2FmMmZjpnVwZGF0ZZOTlZCQkJCQk5CQkbIwT1U4NjYyNzIwMlUxNjUwXzOTkJCQwIOrY3JlYXRlZFRpbWW4MjAyNi0xMC0wN1QxMjo1ODo1NC42MjRarHJlY2VpdmVkVGltZbgyMDI2LTEwLTA3VDEyOjU4OjU0LjYzMlqtcHVibGlzaGVkVGltZbgyMDI2LTEwLTA3VDEyOjU4OjU0LjYzN1rAktf/ngmP8GrGQg4A",
+     "decoded": [
+      "f52eee3e-7eb7-4d7e-84e7-9ca2797af2fc",
+      "update",
+      [
+       [
+        [
+         [],
+         [],
+         [],
+         [],
+         []
+        ],
+        [
+         [],
+         [],
+         [
+          "0OU86627202U1650_3"
+         ]
+        ],
+        [
+         [],
+         [],
+         []
+        ]
+       ],
+       null,
+       {
+        "createdTime": "2026-10-07T12:58:54.624Z",
+        "receivedTime": "2026-10-07T12:58:54.632Z",
+        "publishedTime": "2026-10-07T12:58:54.637Z"
+       }
+      ],
+      null,
+      [
+       {
+        "__ts__": 1791377934.6628568
+       },
+       0
+      ]
+     ]
+    },
+    {
+     "dir": "receive",
+     "t": 1791377934.2898252,
+     "opcode": 2,
+     "bytes": 210,
+     "raw_b64": "ldkkZjUyZWVlM2UtN2ViNy00ZDdlLTg0ZTctOWNhMjc5N2FmMmZjpnVwZGF0ZZOTlZCQkJCQk5CQkbIwT1U4NjYyNzIwMk8xNjUwXzGTkJCQwIOrY3JlYXRlZFRpbWW4MjAyNi0xMC0wN1QxMjo1ODo1NC42MjRarHJlY2VpdmVkVGltZbgyMDI2LTEwLTA3VDEyOjU4OjU0LjYzMlqtcHVibGlzaGVkVGltZbgyMDI2LTEwLTA3VDEyOjU4OjU0LjYzOVrAktf/ngnDgGrGQg4A",
+     "decoded": [
+      "f52eee3e-7eb7-4d7e-84e7-9ca2797af2fc",
+      "update",
+      [
+       [
+        [
+         [],
+         [],
+         [],
+         [],
+         []
+        ],
+        [
+         [],
+         [],
+         [
+          "0OU86627202O1650_1"
+         ]
+        ],
+        [
+         [],
+         [],
+         []
+        ]
+       ],
+       null,
+       {
+        "createdTime": "2026-10-07T12:58:54.624Z",
+        "receivedTime": "2026-10-07T12:58:54.632Z",
+        "publishedTime": "2026-10-07T12:58:54.639Z"
+       }
+      ],
+      null,
+      [
+       {
+        "__ts__": 1791377934.66286
+       },
+       0
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "url": "wss://sportsbook-ws-us-il.draftkings.com/websocket?format=msgpack&locale=en",
+   "frames": [
+    {
+     "dir": "send",
+     "t": 1791377938.17891,
+     "opcode": 2,
+     "bytes": 565,
+     "raw_b64": "hKdqc29ucnBjozIuMKZwYXJhbXOGpmVudGl0eaZldmVudHOrcXVlcnlQYXJhbXOFpXF1ZXJ52ZMkZmlsdGVyPXRhZ3MgLyBhbnkodDogdCBlcSAnRmVhdHVyZWRTdWJjYXRlZ29yeScpIGFuZCBpc0xpdmUgZXEgdHJ1ZSBhbmQgY2xpZW50TWV0YWRhdGEvU3ViY2F0ZWdvcmllcy9hbnkoczogcy9JZCBlcSAnNDUxOScpJiRvcmRlckJ5PXNvcnRPcmRlciBhc2OraW5pdGlhbERhdGHCrmluY2x1ZGVNYXJrZXRz2XIkZmlsdGVyPWNsaWVudE1ldGFkYXRhL3N1YkNhdGVnb3J5SWQgZXEgJzQ1MTknIGFuZCB0YWdzL2FueSh0OiB0IGVxICdGZWF0dXJlZFN1YmNhdGVnb3J5JykgYW5kIGxlYWd1ZUlkIGVxICczNjM5NSeqcHJvamVjdGlvbqpzcG9ydHNib29rpmxvY2FsZaJlbrBmb3J3YXJkZWRIZWFkZXJzgK5jbGllbnRNZXRhZGF0YYOnZmVhdHVyZaVldmVudK1YLUNsaWVudC1OYW1lo3dlYrBYLUNsaWVudC1WZXJzaW9uqjI2NDAuNC4xLjijand0rWRlZmF1bHQtdG9rZW6oc2l0ZU5hbWWmZGt1c2lspm1ldGhvZKlzdWJzY3JpYmWiaWTZJGZmZGEzNTUwLWFjODAtNGZhOS1iMzMwLWMyMTBlZDU3NTYxNw==",
+     "decoded": {
+      "jsonrpc": "2.0",
+      "params": {
+       "entity": "events",
+       "queryParams": {
+        "query": "$filter=tags / any(t: t eq 'FeaturedSubcategory') and isLive eq true and clientMetadata/Subcategories/any(s: s/Id eq '4519')&$orderBy=sortOrder asc",
+        "initialData": false,
+        "includeMarkets": "$filter=clientMetadata/subCategoryId eq '4519' and tags/any(t: t eq 'FeaturedSubcategory') and leagueId eq '36395'",
+        "projection": "sportsbook",
+        "locale": "en"
+       },
+       "forwardedHeaders": {},
+       "clientMetadata": {
+        "feature": "event",
+        "X-Client-Name": "web",
+        "X-Client-Version": "2640.4.1.8"
+       },
+       "jwt": "default-token",
+       "siteName": "dkusil"
+      },
+      "method": "subscribe",
+      "id": "ffda3550-ac80-4fa9-b330-c210ed575617"
+     }
+    },
+    {
+     "dir": "receive",
+     "t": 1791377938.389225,
+     "opcode": 2,
+     "bytes": 64,
+     "raw_b64": "ldkkZmZkYTM1NTAtYWM4MC00ZmE5LWIzMzAtYzIxMGVkNTc1NjE3qnN1YnNjcmliZWTAwJLX/7GMQiBqxkISAA==",
+     "decoded": [
+      "ffda3550-ac80-4fa9-b330-c210ed575617",
+      "subscribed",
+      null,
+      null,
+      [
+       {
+        "__ts__": 1791377938.74469
+       },
+       0
+      ]
+     ]
+    },
+    {
+     "dir": "send",
+     "t": 1791377938.673107,
+     "opcode": 2,
+     "bytes": 81,
+     "raw_b64": "hKdqc29ucnBjozIuMKZwYXJhbXOApm1ldGhvZKt1bnN1YnNjcmliZaJpZNkkZmZkYTM1NTAtYWM4MC00ZmE5LWIzMzAtYzIxMGVkNTc1NjE3",
+     "decoded": {
+      "jsonrpc": "2.0",
+      "params": {},
+      "method": "unsubscribe",
+      "id": "ffda3550-ac80-4fa9-b330-c210ed575617"
+     }
+    },
+    {
+     "dir": "receive",
+     "t": 1791377939.041082,
+     "opcode": 2,
+     "bytes": 65,
+     "raw_b64": "ldkkZmZkYTM1NTAtYWM4MC00ZmE5LWIzMzAtYzIxMGVkNTc1NjE3q3Vuc3Vic2NyaWJlwMCS1/86gx6wasZCEwA=",
+     "decoded": [
+      "ffda3550-ac80-4fa9-b330-c210ed575617",
+      "unsubscribe",
+      null,
+      null,
+      [
+       {
+        "__ts__": 1791377939.245418
+       },
+       0
+      ]
+     ]
+    },
+    {
+     "dir": "send",
+     "t": 1791377940.677602,
+     "opcode": 2,
+     "bytes": 380,
+     "raw_b64": "hKdqc29ucnBjozIuMKZwYXJhbXOGpmVudGl0eaZldmVudHOrcXVlcnlQYXJhbXOFpXF1ZXJ52U0kZmlsdGVyPWlkIGVxICczNDc4NzU1MScgYW5kIHRhZ3MgLyBhbnkodDogdCBlcSAnT1NCJykmJG9yZGVyQnk9c29ydE9yZGVyIGFzY6tpbml0aWFsRGF0YcKqcHJvamVjdGlvbqpzcG9ydHNib29rpmxvY2FsZaJlbq5pbmNsdWRlTWFya2V0c8CwZm9yd2FyZGVkSGVhZGVyc4CuY2xpZW50TWV0YWRhdGGDp2ZlYXR1cmWlZXZlbnStWC1DbGllbnQtTmFtZaN3ZWKwWC1DbGllbnQtVmVyc2lvbqoyNjQwLjQuMS44o2p3dK1kZWZhdWx0LXRva2VuqHNpdGVOYW1lpmRrdXNpbKZtZXRob2Spc3Vic2NyaWJlomlk2SRkYmI0MDRlZS02YWY3LTRjYjAtYjI5YS1kNTBiZmEyODNkNGI=",
+     "decoded": {
+      "jsonrpc": "2.0",
+      "params": {
+       "entity": "events",
+       "queryParams": {
+        "query": "$filter=id eq '34787551' and tags / any(t: t eq 'OSB')&$orderBy=sortOrder asc",
+        "initialData": false,
+        "projection": "sportsbook",
+        "locale": "en",
+        "includeMarkets": null
+       },
+       "forwardedHeaders": {},
+       "clientMetadata": {
+        "feature": "event",
+        "X-Client-Name": "web",
+        "X-Client-Version": "2640.4.1.8"
+       },
+       "jwt": "default-token",
+       "siteName": "dkusil"
+      },
+      "method": "subscribe",
+      "id": "dbb404ee-6af7-4cb0-b29a-d50bfa283d4b"
+     }
+    },
+    {
+     "dir": "send",
+     "t": 1791377940.782467,
+     "opcode": 2,
+     "bytes": 333,
+     "raw_b64": "hKdqc29ucnBjozIuMKZwYXJhbXOGpmVudGl0eaZldmVudHOrcXVlcnlQYXJhbXOFpXF1ZXJ5uyRmaWx0ZXI9bGVhZ3VlSWQgZXEgJzM2Mzk1J6tpbml0aWFsRGF0YcKuaW5jbHVkZU1hcmtldHOkbm9uZapwcm9qZWN0aW9uqnNwb3J0c2Jvb2umbG9jYWxlomVusGZvcndhcmRlZEhlYWRlcnOArmNsaWVudE1ldGFkYXRhg6dmZWF0dXJlpWV2ZW50rVgtQ2xpZW50LU5hbWWjd2VisFgtQ2xpZW50LVZlcnNpb26qMjY0MC40LjEuOKNqd3StZGVmYXVsdC10b2tlbqhzaXRlTmFtZaZka3VzaWymbWV0aG9kqXN1YnNjcmliZaJpZNkkMjNhNmQyYmMtYzgxOS00MWQ3LWExYzEtNGQ3Njg3NjVmYTA3",
+     "decoded": {
+      "jsonrpc": "2.0",
+      "params": {
+       "entity": "events",
+       "queryParams": {
+        "query": "$filter=leagueId eq '36395'",
+        "initialData": false,
+        "includeMarkets": "none",
+        "projection": "sportsbook",
+        "locale": "en"
+       },
+       "forwardedHeaders": {},
+       "clientMetadata": {
+        "feature": "event",
+        "X-Client-Name": "web",
+        "X-Client-Version": "2640.4.1.8"
+       },
+       "jwt": "default-token",
+       "siteName": "dkusil"
+      },
+      "method": "subscribe",
+      "id": "23a6d2bc-c819-41d7-a1c1-4d768765fa07"
+     }
+    },
+    {
+     "dir": "receive",
+     "t": 1791377940.870687,
+     "opcode": 2,
+     "bytes": 64,
+     "raw_b64": "ldkkZGJiNDA0ZWUtNmFmNy00Y2IwLWIyOWEtZDUwYmZhMjgzZDRiqnN1YnNjcmliZWTAwJLX/zntmiBqxkIVAA==",
+     "decoded": [
+      "dbb404ee-6af7-4cb0-b29a-d50bfa283d4b",
+      "subscribed",
+      null,
+      null,
+      [
+       {
+        "__ts__": 1791377941.2429683
+       },
+       0
+      ]
+     ]
+    },
+    {
+     "dir": "receive",
+     "t": 1791377941.258204,
+     "opcode": 2,
+     "bytes": 64,
+     "raw_b64": "ldkkMjNhNmQyYmMtYzgxOS00MWQ3LWExYzEtNGQ3Njg3NjVmYTA3qnN1YnNjcmliZWTAwJLX/1Q5BeBqxkIVAA==",
+     "decoded": [
+      "23a6d2bc-c819-41d7-a1c1-4d768765fa07",
+      "subscribed",
+      null,
+      null,
+      [
+       {
+        "__ts__": 1791377941.3532557
+       },
+       0
+      ]
+     ]
+    },
+    {
+     "dir": "send",
+     "t": 1791377941.467857,
+     "opcode": 2,
+     "bytes": 432,
+     "raw_b64": "hKdqc29ucnBjozIuMKZwYXJhbXOGpmVudGl0eadtYXJrZXRzq3F1ZXJ5UGFyYW1zhKVxdWVyedmQJGZpbHRlcj1ldmVudElkIGVxICczNDc4NzU1MScgQU5EIGNsaWVudE1ldGFkYXRhL3N1YkNhdGVnb3J5SWQgZXEgJzQ1MTknIEFORCB0YWdzL2FsbCh0OiB0IG5lICdTcG9ydGNhc3RCZXRCdWlsZGVyJykgYW5kIHRhZ3MvYW55KHQ6IHQgZXEgJ09TQicpq2luaXRpYWxEYXRhwqpwcm9qZWN0aW9uqnNwb3J0c2Jvb2umbG9jYWxlomVusGZvcndhcmRlZEhlYWRlcnOArmNsaWVudE1ldGFkYXRhg6dmZWF0dXJlpWV2ZW50rVgtQ2xpZW50LU5hbWWjd2VisFgtQ2xpZW50LVZlcnNpb26qMjY0MC40LjEuOKNqd3StZGVmYXVsdC10b2tlbqhzaXRlTmFtZaZka3VzaWymbWV0aG9kqXN1YnNjcmliZaJpZNkkMzI1MDJjYjAtNzRhYi00MTgzLWFmNmMtOTBjNDU5Yjk4YTA2",
+     "decoded": {
+      "jsonrpc": "2.0",
+      "params": {
+       "entity": "markets",
+       "queryParams": {
+        "query": "$filter=eventId eq '34787551' AND clientMetadata/subCategoryId eq '4519' AND tags/all(t: t ne 'SportcastBetBuilder') and tags/any(t: t eq 'OSB')",
+        "initialData": false,
+        "projection": "sportsbook",
+        "locale": "en"
+       },
+       "forwardedHeaders": {},
+       "clientMetadata": {
+        "feature": "event",
+        "X-Client-Name": "web",
+        "X-Client-Version": "2640.4.1.8"
+       },
+       "jwt": "default-token",
+       "siteName": "dkusil"
+      },
+      "method": "subscribe",
+      "id": "32502cb0-74ab-4183-af6c-90c459b98a06"
+     }
+    },
+    {
+     "dir": "send",
+     "t": 1791377941.470496,
+     "opcode": 2,
+     "bytes": 338,
+     "raw_b64": "hKdqc29ucnBjozIuMKZwYXJhbXOGpmVudGl0eaxDb250ZW50Q2FyZHOrcXVlcnlQYXJhbXOCpXF1ZXJ52VAkZmlsdGVyPWNvbnRlbnRDYXJkVHlwZSBlcSAncHJlbGl2ZScgYW5kIGV2ZW50SWQgZXEgJzM0MzQzODA2JyBhbmQgdGFncyBlcSAnT1NCJ6Zsb2NhbGWiZW6wZm9yd2FyZGVkSGVhZGVyc4CuY2xpZW50TWV0YWRhdGGDp2ZlYXR1cmWlZXZlbnStWC1DbGllbnQtTmFtZaN3ZWKwWC1DbGllbnQtVmVyc2lvbqoyNjQwLjQuMS44o2p3dK1kZWZhdWx0LXRva2VuqHNpdGVOYW1lpmRrdXNpbKZtZXRob2Spc3Vic2NyaWJlomlk2SRkZThhNGM0OS0wZDcwLTRiYzItYWM1My00Y2FhYzUzZWI3NjQ=",
+     "decoded": {
+      "jsonrpc": "2.0",
+      "params": {
+       "entity": "ContentCards",
+       "queryParams": {
+        "query": "$filter=contentCardType eq 'prelive' and eventId eq '34343806' and tags eq 'OSB'",
+        "locale": "en"
+       },
+       "forwardedHeaders": {},
+       "clientMetadata": {
+        "feature": "event",
+        "X-Client-Name": "web",
+        "X-Client-Version": "2640.4.1.8"
+       },
+       "jwt": "default-token",
+       "siteName": "dkusil"
+      },
+      "method": "subscribe",
+      "id": "de8a4c49-0d70-4bc2-ac53-4caac53eb764"
+     }
+    },
+    {
+     "dir": "receive",
+     "t": 1791377941.774026,
+     "opcode": 2,
+     "bytes": 64,
+     "raw_b64": "ldkkMzI1MDJjYjAtNzRhYi00MTgzLWFmNmMtOTBjNDU5Yjk4YTA2qnN1YnNjcmliZWTAwJLX/wge1tBqxkIWAA==",
+     "decoded": [
+      "32502cb0-74ab-4183-af6c-90c459b98a06",
+      "subscribed",
+      null,
+      null,
+      [
+       {
+        "__ts__": 1791377942.0340598
+       },
+       0
+      ]
+     ]
+    },
+    {
+     "dir": "receive",
+     "t": 1791377941.8371658,
+     "opcode": 2,
+     "bytes": 64,
+     "raw_b64": "ldkkZGU4YTRjNDktMGQ3MC00YmMyLWFjNTMtNGNhYWM1M2ViNzY0qnN1YnNjcmliZWTAwJLX/wkiK+BqxkIWAA==",
+     "decoded": [
+      "de8a4c49-0d70-4bc2-ac53-4caac53eb764",
+      "subscribed",
+      null,
+      null,
+      [
+       {
+        "__ts__": 1791377942.0383086
+       },
+       0
+      ]
+     ]
+    },
+    {
+     "dir": "receive",
+     "t": 1791377944.88991,
+     "opcode": 2,
+     "bytes": 1012,
+     "raw_b64": "ldkkMjNhNmQyYmMtYzgxOS00MWQ3LWExYzEtNGQ3Njg3NjVmYTA3pnVwZGF0ZZOTlZCQkJCQk5CQkJORkhaaqDM0Nzg3NTUx1v9qxhEckpqmNDg2MzY3rEtUIFdpeiBTdXdvbqRIb21lpFRlYW2CrXJvc2V0dGFUZWFtSWSmNDg2MzY3r3Jvc2V0dGFUZWFtTmFtZaJrdAKia3SQwqJaWpqmNDg2NDgzrVNhbXN1bmcgTGlvbnOkQXdheaRUZWFtgq1yb3NldHRhVGVhbUlkpjQ4NjQ4M69yb3NldHRhVGVhbU5hbWWlTGlvbnMBpUxpb25zkMKiWlqnU1RBUlRFRJWjOXRowMLCwJOYwKFUzn////+hM6E5wIOnb25TZXJ2ZaEyrGJhc2ViYWxsQmFzZaEwrGJhc2ViYWxsT3V0c6EywJqXwKExAaEwoTDAwJfAoTICoTChMsDAl8ChMwOhMKEwwMCXwKE0BKEwoTDAwJfAoTUFoTChMMDAl8ChNgahMKExwMCXwKE3B6EwoTHAwJfAoTgIoTChNcDAl8ChOQmhM6EwwMCXwKFUzn////+hM6E5wIOnb25TZXJ2ZaEyrGJhc2ViYWxsQmFzZaEwrGJhc2ViYWxsT3V0c6EyAZmzRmVhdHVyZWRTdWJjYXRlZ29yea1MaXZlU3RyZWFtaW5nrE1hdGNoVHJhY2tlcqNPU0KjU0dQqlNjb3JlYm9hcmSuU2dwRHluYW1pY09kZHOlU3RhdHOvWW91ckJldEVsaWdpYmxlgq5tYXN0ZXJMZWFndWVJZKQxNTk0rW51bWJlck9mUGFydHOhOc4O8Bytl8CToTmhM6FSmZOhMKEwoTGToTKhMKEyk6EwoTChM5OhMKEwoTSToTChMKE1k6ExoTChNpOhMaEwoTeToTWhMKE4k6EwoTOhOcDAkZOhMKEwoUiLpWF0QmF0pGF3YXmxYXdheUN1cnJlbnRCYXR0ZXKhMK5hd2F5TmV4dEJhdHRlcqEwtWF3YXlOZXh0UGx1c09uZUJhdHRlcqEwpWJhbGxzoTGlYmFzZXOjMDAwsWhvbWVDdXJyZW50QmF0dGVyoTCuaG9tZU5leHRCYXR0ZXKhMLVob21lTmV4dFBsdXNPbmVCYXR0ZXKmMjI4NTg4pG91dHOhMqdzdHJpa2VzoTKQkMCDq2NyZWF0ZWRUaW1luDIwMjYtMTAtMDdUMTI6NTk6MDUuMjM0WqxyZWNlaXZlZFRpbWW4MjAyNi0xMC0wN1QxMjo1OTowNS4yNDJarXB1Ymxpc2hlZFRpbWW4MjAyNi0xMC0wN1QxMjo1OTowNS4yNDNawJLX/z7+jOBqxkIZAA==",
+     "decoded": [
+      "23a6d2bc-c819-41d7-a1c1-4d768765fa07",
+      "update",
+      [
+       [
+        [
+         [],
+         [],
+         [],
+         [],
+         []
+        ],
+        [
+         [],
+         [],
+         []
+        ],
+        [
+         [
+          [
+           22,
+           [
+            "34787551",
+            {
+             "__ts__": 1791365404.0
+            },
+            [
+             [
+              "486367",
+              "KT Wiz Suwon",
+              "Home",
+              "Team",
+              {
+               "rosettaTeamId": "486367",
+               "rosettaTeamName": "kt"
+              },
+              2,
+              "kt",
+              [],
+              false,
+              "ZZ"
+             ],
+             [
+              "486483",
+              "Samsung Lions",
+              "Away",
+              "Team",
+              {
+               "rosettaTeamId": "486483",
+               "rosettaTeamName": "Lions"
+              },
+              1,
+              "Lions",
+              [],
+              false,
+              "ZZ"
+             ]
+            ],
+            "STARTED",
+            [
+             "9th",
+             null,
+             false,
+             false,
+             null
+            ],
+            [
+             [
+              null,
+              "T",
+              2147483647,
+              "3",
+              "9",
+              null,
+              {
+               "onServe": "2",
+               "baseballBase": "0",
+               "baseballOuts": "2"
+              },
+              null
+             ],
+             [
+              [
+               null,
+               "1",
+               1,
+               "0",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "2",
+               2,
+               "0",
+               "2",
+               null,
+               null
+              ],
+              [
+               null,
+               "3",
+               3,
+               "0",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "4",
+               4,
+               "0",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "5",
+               5,
+               "0",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "6",
+               6,
+               "0",
+               "1",
+               null,
+               null
+              ],
+              [
+               null,
+               "7",
+               7,
+               "0",
+               "1",
+               null,
+               null
+              ],
+              [
+               null,
+               "8",
+               8,
+               "0",
+               "5",
+               null,
+               null
+              ],
+              [
+               null,
+               "9",
+               9,
+               "3",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "T",
+               2147483647,
+               "3",
+               "9",
+               null,
+               {
+                "onServe": "2",
+                "baseballBase": "0",
+                "baseballOuts": "2"
+               }
+              ]
+             ],
+             1
+            ],
+            [
+             "FeaturedSubcategory",
+             "LiveStreaming",
+             "MatchTracker",
+             "OSB",
+             "SGP",
+             "Scoreboard",
+             "SgpDynamicOdds",
+             "Stats",
+             "YourBetEligible"
+            ],
+            {
+             "masterLeagueId": "1594",
+             "numberOfParts": "9"
+            },
+            250617005,
+            [
+             null,
+             [
+              "9",
+              "3",
+              "R"
+             ],
+             [
+              [
+               "0",
+               "0",
+               "1"
+              ],
+              [
+               "2",
+               "0",
+               "2"
+              ],
+              [
+               "0",
+               "0",
+               "3"
+              ],
+              [
+               "0",
+               "0",
+               "4"
+              ],
+              [
+               "0",
+               "0",
+               "5"
+              ],
+              [
+               "1",
+               "0",
+               "6"
+              ],
+              [
+               "1",
+               "0",
+               "7"
+              ],
+              [
+               "5",
+               "0",
+               "8"
+              ],
+              [
+               "0",
+               "3",
+               "9"
+              ]
+             ],
+             null,
+             null,
+             [
+              [
+               "0",
+               "0",
+               "H"
+              ]
+             ],
+             {
+              "atBat": "away",
+              "awayCurrentBatter": "0",
+              "awayNextBatter": "0",
+              "awayNextPlusOneBatter": "0",
+              "balls": "1",
+              "bases": "000",
+              "homeCurrentBatter": "0",
+              "homeNextBatter": "0",
+              "homeNextPlusOneBatter": "228588",
+              "outs": "2",
+              "strikes": "2"
+             }
+            ]
+           ]
+          ]
+         ],
+         [],
+         []
+        ]
+       ],
+       null,
+       {
+        "createdTime": "2026-10-07T12:59:05.234Z",
+        "receivedTime": "2026-10-07T12:59:05.242Z",
+        "publishedTime": "2026-10-07T12:59:05.243Z"
+       }
+      ],
+      null,
+      [
+       {
+        "__ts__": 1791377945.2642174
+       },
+       0
+      ]
+     ]
+    },
+    {
+     "dir": "receive",
+     "t": 1791377944.899618,
+     "opcode": 2,
+     "bytes": 1012,
+     "raw_b64": "ldkkZGJiNDA0ZWUtNmFmNy00Y2IwLWIyOWEtZDUwYmZhMjgzZDRipnVwZGF0ZZOTlZCQkJCQk5CQkJORkhaaqDM0Nzg3NTUx1v9qxhEckpqmNDg2MzY3rEtUIFdpeiBTdXdvbqRIb21lpFRlYW2CrXJvc2V0dGFUZWFtSWSmNDg2MzY3r3Jvc2V0dGFUZWFtTmFtZaJrdAKia3SQwqJaWpqmNDg2NDgzrVNhbXN1bmcgTGlvbnOkQXdheaRUZWFtgq1yb3NldHRhVGVhbUlkpjQ4NjQ4M69yb3NldHRhVGVhbU5hbWWlTGlvbnMBpUxpb25zkMKiWlqnU1RBUlRFRJWjOXRowMLCwJOYwKFUzn////+hM6E5wIOnb25TZXJ2ZaEyrGJhc2ViYWxsQmFzZaEwrGJhc2ViYWxsT3V0c6EywJqXwKExAaEwoTDAwJfAoTICoTChMsDAl8ChMwOhMKEwwMCXwKE0BKEwoTDAwJfAoTUFoTChMMDAl8ChNgahMKExwMCXwKE3B6EwoTHAwJfAoTgIoTChNcDAl8ChOQmhM6EwwMCXwKFUzn////+hM6E5wIOnb25TZXJ2ZaEyrGJhc2ViYWxsQmFzZaEwrGJhc2ViYWxsT3V0c6EyAZmzRmVhdHVyZWRTdWJjYXRlZ29yea1MaXZlU3RyZWFtaW5nrE1hdGNoVHJhY2tlcqNPU0KjU0dQqlNjb3JlYm9hcmSuU2dwRHluYW1pY09kZHOlU3RhdHOvWW91ckJldEVsaWdpYmxlgq5tYXN0ZXJMZWFndWVJZKQxNTk0rW51bWJlck9mUGFydHOhOc4O8Bytl8CToTmhM6FSmZOhMKEwoTGToTKhMKEyk6EwoTChM5OhMKEwoTSToTChMKE1k6ExoTChNpOhMaEwoTeToTWhMKE4k6EwoTOhOcDAkZOhMKEwoUiLpWF0QmF0pGF3YXmxYXdheUN1cnJlbnRCYXR0ZXKhMK5hd2F5TmV4dEJhdHRlcqEwtWF3YXlOZXh0UGx1c09uZUJhdHRlcqEwpWJhbGxzoTGlYmFzZXOjMDAwsWhvbWVDdXJyZW50QmF0dGVyoTCuaG9tZU5leHRCYXR0ZXKhMLVob21lTmV4dFBsdXNPbmVCYXR0ZXKmMjI4NTg4pG91dHOhMqdzdHJpa2VzoTKQkMCDq2NyZWF0ZWRUaW1luDIwMjYtMTAtMDdUMTI6NTk6MDUuMjM0WqxyZWNlaXZlZFRpbWW4MjAyNi0xMC0wN1QxMjo1OTowNS4yNDJarXB1Ymxpc2hlZFRpbWW4MjAyNi0xMC0wN1QxMjo1OTowNS4yNDRawJLX/0FLWbBqxkIZAA==",
+     "decoded": [
+      "dbb404ee-6af7-4cb0-b29a-d50bfa283d4b",
+      "update",
+      [
+       [
+        [
+         [],
+         [],
+         [],
+         [],
+         []
+        ],
+        [
+         [],
+         [],
+         []
+        ],
+        [
+         [
+          [
+           22,
+           [
+            "34787551",
+            {
+             "__ts__": 1791365404.0
+            },
+            [
+             [
+              "486367",
+              "KT Wiz Suwon",
+              "Home",
+              "Team",
+              {
+               "rosettaTeamId": "486367",
+               "rosettaTeamName": "kt"
+              },
+              2,
+              "kt",
+              [],
+              false,
+              "ZZ"
+             ],
+             [
+              "486483",
+              "Samsung Lions",
+              "Away",
+              "Team",
+              {
+               "rosettaTeamId": "486483",
+               "rosettaTeamName": "Lions"
+              },
+              1,
+              "Lions",
+              [],
+              false,
+              "ZZ"
+             ]
+            ],
+            "STARTED",
+            [
+             "9th",
+             null,
+             false,
+             false,
+             null
+            ],
+            [
+             [
+              null,
+              "T",
+              2147483647,
+              "3",
+              "9",
+              null,
+              {
+               "onServe": "2",
+               "baseballBase": "0",
+               "baseballOuts": "2"
+              },
+              null
+             ],
+             [
+              [
+               null,
+               "1",
+               1,
+               "0",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "2",
+               2,
+               "0",
+               "2",
+               null,
+               null
+              ],
+              [
+               null,
+               "3",
+               3,
+               "0",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "4",
+               4,
+               "0",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "5",
+               5,
+               "0",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "6",
+               6,
+               "0",
+               "1",
+               null,
+               null
+              ],
+              [
+               null,
+               "7",
+               7,
+               "0",
+               "1",
+               null,
+               null
+              ],
+              [
+               null,
+               "8",
+               8,
+               "0",
+               "5",
+               null,
+               null
+              ],
+              [
+               null,
+               "9",
+               9,
+               "3",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "T",
+               2147483647,
+               "3",
+               "9",
+               null,
+               {
+                "onServe": "2",
+                "baseballBase": "0",
+                "baseballOuts": "2"
+               }
+              ]
+             ],
+             1
+            ],
+            [
+             "FeaturedSubcategory",
+             "LiveStreaming",
+             "MatchTracker",
+             "OSB",
+             "SGP",
+             "Scoreboard",
+             "SgpDynamicOdds",
+             "Stats",
+             "YourBetEligible"
+            ],
+            {
+             "masterLeagueId": "1594",
+             "numberOfParts": "9"
+            },
+            250617005,
+            [
+             null,
+             [
+              "9",
+              "3",
+              "R"
+             ],
+             [
+              [
+               "0",
+               "0",
+               "1"
+              ],
+              [
+               "2",
+               "0",
+               "2"
+              ],
+              [
+               "0",
+               "0",
+               "3"
+              ],
+              [
+               "0",
+               "0",
+               "4"
+              ],
+              [
+               "0",
+               "0",
+               "5"
+              ],
+              [
+               "1",
+               "0",
+               "6"
+              ],
+              [
+               "1",
+               "0",
+               "7"
+              ],
+              [
+               "5",
+               "0",
+               "8"
+              ],
+              [
+               "0",
+               "3",
+               "9"
+              ]
+             ],
+             null,
+             null,
+             [
+              [
+               "0",
+               "0",
+               "H"
+              ]
+             ],
+             {
+              "atBat": "away",
+              "awayCurrentBatter": "0",
+              "awayNextBatter": "0",
+              "awayNextPlusOneBatter": "0",
+              "balls": "1",
+              "bases": "000",
+              "homeCurrentBatter": "0",
+              "homeNextBatter": "0",
+              "homeNextPlusOneBatter": "228588",
+              "outs": "2",
+              "strikes": "2"
+             }
+            ]
+           ]
+          ]
+         ],
+         [],
+         []
+        ]
+       ],
+       null,
+       {
+        "createdTime": "2026-10-07T12:59:05.234Z",
+        "receivedTime": "2026-10-07T12:59:05.242Z",
+        "publishedTime": "2026-10-07T12:59:05.244Z"
+       }
+      ],
+      null,
+      [
+       {
+        "__ts__": 1791377945.2738643
+       },
+       0
+      ]
+     ]
+    },
+    {
+     "dir": "receive",
+     "t": 1791377947.2984378,
+     "opcode": 2,
+     "bytes": 1012,
+     "raw_b64": "ldkkZGJiNDA0ZWUtNmFmNy00Y2IwLWIyOWEtZDUwYmZhMjgzZDRipnVwZGF0ZZOTlZCQkJCQk5CQkJORkhaaqDM0Nzg3NTUx1v9qxhEckpqmNDg2MzY3rEtUIFdpeiBTdXdvbqRIb21lpFRlYW2CrXJvc2V0dGFUZWFtSWSmNDg2MzY3r3Jvc2V0dGFUZWFtTmFtZaJrdAKia3SQwqJaWpqmNDg2NDgzrVNhbXN1bmcgTGlvbnOkQXdheaRUZWFtgq1yb3NldHRhVGVhbUlkpjQ4NjQ4M69yb3NldHRhVGVhbU5hbWWlTGlvbnMBpUxpb25zkMKiWlqnU1RBUlRFRJWjOXRowMLCwJOYwKFUzn////+hM6E5wIOnb25TZXJ2ZaEyrGJhc2ViYWxsQmFzZaEwrGJhc2ViYWxsT3V0c6EzwJqXwKExAaEwoTDAwJfAoTICoTChMsDAl8ChMwOhMKEwwMCXwKE0BKEwoTDAwJfAoTUFoTChMMDAl8ChNgahMKExwMCXwKE3B6EwoTHAwJfAoTgIoTChNcDAl8ChOQmhM6EwwMCXwKFUzn////+hM6E5wIOnb25TZXJ2ZaEyrGJhc2ViYWxsQmFzZaEwrGJhc2ViYWxsT3V0c6EzAZmzRmVhdHVyZWRTdWJjYXRlZ29yea1MaXZlU3RyZWFtaW5nrE1hdGNoVHJhY2tlcqNPU0KjU0dQqlNjb3JlYm9hcmSuU2dwRHluYW1pY09kZHOlU3RhdHOvWW91ckJldEVsaWdpYmxlgq5tYXN0ZXJMZWFndWVJZKQxNTk0rW51bWJlck9mUGFydHOhOc4O8Bytl8CToTmhM6FSmZOhMKEwoTGToTKhMKEyk6EwoTChM5OhMKEwoTSToTChMKE1k6ExoTChNpOhMaEwoTeToTWhMKE4k6EwoTOhOcDAkZOhMKEwoUiLpWF0QmF0pGF3YXmxYXdheUN1cnJlbnRCYXR0ZXKhMK5hd2F5TmV4dEJhdHRlcqEwtWF3YXlOZXh0UGx1c09uZUJhdHRlcqEwpWJhbGxzoTGlYmFzZXOjMDAwsWhvbWVDdXJyZW50QmF0dGVyoTCuaG9tZU5leHRCYXR0ZXKhMLVob21lTmV4dFBsdXNPbmVCYXR0ZXKmMjI4NTg4pG91dHOhM6dzdHJpa2VzoTKQkMCDq2NyZWF0ZWRUaW1luDIwMjYtMTAtMDdUMTI6NTk6MDcuNjM3WqxyZWNlaXZlZFRpbWW4MjAyNi0xMC0wN1QxMjo1OTowNy42NDZarXB1Ymxpc2hlZFRpbWW4MjAyNi0xMC0wN1QxMjo1OTowNy42NDdawJLX/53r1pBqxkIbAA==",
+     "decoded": [
+      "dbb404ee-6af7-4cb0-b29a-d50bfa283d4b",
+      "update",
+      [
+       [
+        [
+         [],
+         [],
+         [],
+         [],
+         []
+        ],
+        [
+         [],
+         [],
+         []
+        ],
+        [
+         [
+          [
+           22,
+           [
+            "34787551",
+            {
+             "__ts__": 1791365404.0
+            },
+            [
+             [
+              "486367",
+              "KT Wiz Suwon",
+              "Home",
+              "Team",
+              {
+               "rosettaTeamId": "486367",
+               "rosettaTeamName": "kt"
+              },
+              2,
+              "kt",
+              [],
+              false,
+              "ZZ"
+             ],
+             [
+              "486483",
+              "Samsung Lions",
+              "Away",
+              "Team",
+              {
+               "rosettaTeamId": "486483",
+               "rosettaTeamName": "Lions"
+              },
+              1,
+              "Lions",
+              [],
+              false,
+              "ZZ"
+             ]
+            ],
+            "STARTED",
+            [
+             "9th",
+             null,
+             false,
+             false,
+             null
+            ],
+            [
+             [
+              null,
+              "T",
+              2147483647,
+              "3",
+              "9",
+              null,
+              {
+               "onServe": "2",
+               "baseballBase": "0",
+               "baseballOuts": "3"
+              },
+              null
+             ],
+             [
+              [
+               null,
+               "1",
+               1,
+               "0",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "2",
+               2,
+               "0",
+               "2",
+               null,
+               null
+              ],
+              [
+               null,
+               "3",
+               3,
+               "0",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "4",
+               4,
+               "0",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "5",
+               5,
+               "0",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "6",
+               6,
+               "0",
+               "1",
+               null,
+               null
+              ],
+              [
+               null,
+               "7",
+               7,
+               "0",
+               "1",
+               null,
+               null
+              ],
+              [
+               null,
+               "8",
+               8,
+               "0",
+               "5",
+               null,
+               null
+              ],
+              [
+               null,
+               "9",
+               9,
+               "3",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "T",
+               2147483647,
+               "3",
+               "9",
+               null,
+               {
+                "onServe": "2",
+                "baseballBase": "0",
+                "baseballOuts": "3"
+               }
+              ]
+             ],
+             1
+            ],
+            [
+             "FeaturedSubcategory",
+             "LiveStreaming",
+             "MatchTracker",
+             "OSB",
+             "SGP",
+             "Scoreboard",
+             "SgpDynamicOdds",
+             "Stats",
+             "YourBetEligible"
+            ],
+            {
+             "masterLeagueId": "1594",
+             "numberOfParts": "9"
+            },
+            250617005,
+            [
+             null,
+             [
+              "9",
+              "3",
+              "R"
+             ],
+             [
+              [
+               "0",
+               "0",
+               "1"
+              ],
+              [
+               "2",
+               "0",
+               "2"
+              ],
+              [
+               "0",
+               "0",
+               "3"
+              ],
+              [
+               "0",
+               "0",
+               "4"
+              ],
+              [
+               "0",
+               "0",
+               "5"
+              ],
+              [
+               "1",
+               "0",
+               "6"
+              ],
+              [
+               "1",
+               "0",
+               "7"
+              ],
+              [
+               "5",
+               "0",
+               "8"
+              ],
+              [
+               "0",
+               "3",
+               "9"
+              ]
+             ],
+             null,
+             null,
+             [
+              [
+               "0",
+               "0",
+               "H"
+              ]
+             ],
+             {
+              "atBat": "away",
+              "awayCurrentBatter": "0",
+              "awayNextBatter": "0",
+              "awayNextPlusOneBatter": "0",
+              "balls": "1",
+              "bases": "000",
+              "homeCurrentBatter": "0",
+              "homeNextBatter": "0",
+              "homeNextPlusOneBatter": "228588",
+              "outs": "3",
+              "strikes": "2"
+             }
+            ]
+           ]
+          ]
+         ],
+         [],
+         []
+        ]
+       ],
+       null,
+       {
+        "createdTime": "2026-10-07T12:59:07.637Z",
+        "receivedTime": "2026-10-07T12:59:07.646Z",
+        "publishedTime": "2026-10-07T12:59:07.647Z"
+       }
+      ],
+      null,
+      [
+       {
+        "__ts__": 1791377947.6623697
+       },
+       0
+      ]
+     ]
+    },
+    {
+     "dir": "receive",
+     "t": 1791377947.3118958,
+     "opcode": 2,
+     "bytes": 1012,
+     "raw_b64": "ldkkMjNhNmQyYmMtYzgxOS00MWQ3LWExYzEtNGQ3Njg3NjVmYTA3pnVwZGF0ZZOTlZCQkJCQk5CQkJORkhaaqDM0Nzg3NTUx1v9qxhEckpqmNDg2MzY3rEtUIFdpeiBTdXdvbqRIb21lpFRlYW2CrXJvc2V0dGFUZWFtSWSmNDg2MzY3r3Jvc2V0dGFUZWFtTmFtZaJrdAKia3SQwqJaWpqmNDg2NDgzrVNhbXN1bmcgTGlvbnOkQXdheaRUZWFtgq1yb3NldHRhVGVhbUlkpjQ4NjQ4M69yb3NldHRhVGVhbU5hbWWlTGlvbnMBpUxpb25zkMKiWlqnU1RBUlRFRJWjOXRowMLCwJOYwKFUzn////+hM6E5wIOnb25TZXJ2ZaEyrGJhc2ViYWxsQmFzZaEwrGJhc2ViYWxsT3V0c6EzwJqXwKExAaEwoTDAwJfAoTICoTChMsDAl8ChMwOhMKEwwMCXwKE0BKEwoTDAwJfAoTUFoTChMMDAl8ChNgahMKExwMCXwKE3B6EwoTHAwJfAoTgIoTChNcDAl8ChOQmhM6EwwMCXwKFUzn////+hM6E5wIOnb25TZXJ2ZaEyrGJhc2ViYWxsQmFzZaEwrGJhc2ViYWxsT3V0c6EzAZmzRmVhdHVyZWRTdWJjYXRlZ29yea1MaXZlU3RyZWFtaW5nrE1hdGNoVHJhY2tlcqNPU0KjU0dQqlNjb3JlYm9hcmSuU2dwRHluYW1pY09kZHOlU3RhdHOvWW91ckJldEVsaWdpYmxlgq5tYXN0ZXJMZWFndWVJZKQxNTk0rW51bWJlck9mUGFydHOhOc4O8Bytl8CToTmhM6FSmZOhMKEwoTGToTKhMKEyk6EwoTChM5OhMKEwoTSToTChMKE1k6ExoTChNpOhMaEwoTeToTWhMKE4k6EwoTOhOcDAkZOhMKEwoUiLpWF0QmF0pGF3YXmxYXdheUN1cnJlbnRCYXR0ZXKhMK5hd2F5TmV4dEJhdHRlcqEwtWF3YXlOZXh0UGx1c09uZUJhdHRlcqEwpWJhbGxzoTGlYmFzZXOjMDAwsWhvbWVDdXJyZW50QmF0dGVyoTCuaG9tZU5leHRCYXR0ZXKhMLVob21lTmV4dFBsdXNPbmVCYXR0ZXKmMjI4NTg4pG91dHOhM6dzdHJpa2VzoTKQkMCDq2NyZWF0ZWRUaW1luDIwMjYtMTAtMDdUMTI6NTk6MDcuNjM3WqxyZWNlaXZlZFRpbWW4MjAyNi0xMC0wN1QxMjo1OTowNy42NDZarXB1Ymxpc2hlZFRpbWW4MjAyNi0xMC0wN1QxMjo1OTowNy42NDdawJLX/6AyMvBqxkIbAA==",
+     "decoded": [
+      "23a6d2bc-c819-41d7-a1c1-4d768765fa07",
+      "update",
+      [
+       [
+        [
+         [],
+         [],
+         [],
+         [],
+         []
+        ],
+        [
+         [],
+         [],
+         []
+        ],
+        [
+         [
+          [
+           22,
+           [
+            "34787551",
+            {
+             "__ts__": 1791365404.0
+            },
+            [
+             [
+              "486367",
+              "KT Wiz Suwon",
+              "Home",
+              "Team",
+              {
+               "rosettaTeamId": "486367",
+               "rosettaTeamName": "kt"
+              },
+              2,
+              "kt",
+              [],
+              false,
+              "ZZ"
+             ],
+             [
+              "486483",
+              "Samsung Lions",
+              "Away",
+              "Team",
+              {
+               "rosettaTeamId": "486483",
+               "rosettaTeamName": "Lions"
+              },
+              1,
+              "Lions",
+              [],
+              false,
+              "ZZ"
+             ]
+            ],
+            "STARTED",
+            [
+             "9th",
+             null,
+             false,
+             false,
+             null
+            ],
+            [
+             [
+              null,
+              "T",
+              2147483647,
+              "3",
+              "9",
+              null,
+              {
+               "onServe": "2",
+               "baseballBase": "0",
+               "baseballOuts": "3"
+              },
+              null
+             ],
+             [
+              [
+               null,
+               "1",
+               1,
+               "0",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "2",
+               2,
+               "0",
+               "2",
+               null,
+               null
+              ],
+              [
+               null,
+               "3",
+               3,
+               "0",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "4",
+               4,
+               "0",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "5",
+               5,
+               "0",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "6",
+               6,
+               "0",
+               "1",
+               null,
+               null
+              ],
+              [
+               null,
+               "7",
+               7,
+               "0",
+               "1",
+               null,
+               null
+              ],
+              [
+               null,
+               "8",
+               8,
+               "0",
+               "5",
+               null,
+               null
+              ],
+              [
+               null,
+               "9",
+               9,
+               "3",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "T",
+               2147483647,
+               "3",
+               "9",
+               null,
+               {
+                "onServe": "2",
+                "baseballBase": "0",
+                "baseballOuts": "3"
+               }
+              ]
+             ],
+             1
+            ],
+            [
+             "FeaturedSubcategory",
+             "LiveStreaming",
+             "MatchTracker",
+             "OSB",
+             "SGP",
+             "Scoreboard",
+             "SgpDynamicOdds",
+             "Stats",
+             "YourBetEligible"
+            ],
+            {
+             "masterLeagueId": "1594",
+             "numberOfParts": "9"
+            },
+            250617005,
+            [
+             null,
+             [
+              "9",
+              "3",
+              "R"
+             ],
+             [
+              [
+               "0",
+               "0",
+               "1"
+              ],
+              [
+               "2",
+               "0",
+               "2"
+              ],
+              [
+               "0",
+               "0",
+               "3"
+              ],
+              [
+               "0",
+               "0",
+               "4"
+              ],
+              [
+               "0",
+               "0",
+               "5"
+              ],
+              [
+               "1",
+               "0",
+               "6"
+              ],
+              [
+               "1",
+               "0",
+               "7"
+              ],
+              [
+               "5",
+               "0",
+               "8"
+              ],
+              [
+               "0",
+               "3",
+               "9"
+              ]
+             ],
+             null,
+             null,
+             [
+              [
+               "0",
+               "0",
+               "H"
+              ]
+             ],
+             {
+              "atBat": "away",
+              "awayCurrentBatter": "0",
+              "awayNextBatter": "0",
+              "awayNextPlusOneBatter": "0",
+              "balls": "1",
+              "bases": "000",
+              "homeCurrentBatter": "0",
+              "homeNextBatter": "0",
+              "homeNextPlusOneBatter": "228588",
+              "outs": "3",
+              "strikes": "2"
+             }
+            ]
+           ]
+          ]
+         ],
+         [],
+         []
+        ]
+       ],
+       null,
+       {
+        "createdTime": "2026-10-07T12:59:07.637Z",
+        "receivedTime": "2026-10-07T12:59:07.646Z",
+        "publishedTime": "2026-10-07T12:59:07.647Z"
+       }
+      ],
+      null,
+      [
+       {
+        "__ts__": 1791377947.6719112
+       },
+       0
+      ]
+     ]
+    },
+    {
+     "dir": "receive",
+     "t": 1791377947.686446,
+     "opcode": 2,
+     "bytes": 197,
+     "raw_b64": "ldkkMzI1MDJjYjAtNzRhYi00MTgzLWFmNmMtOTBjNDU5Yjk4YTA2pnVwZGF0ZZOTkpCQkpGqMl84NjYyNzE3OZCSkJDAg6tjcmVhdGVkVGltZbgyMDI2LTEwLTA3VDEyOjU5OjA4LjAzOVqscmVjZWl2ZWRUaW1luDIwMjYtMTAtMDdUMTI6NTk6MDguMDQ3Wq1wdWJsaXNoZWRUaW1luDIwMjYtMTAtMDdUMTI6NTk6MDguMDUwWsCS1/8OuMSwasZCHAA=",
+     "decoded": [
+      "32502cb0-74ab-4183-af6c-90c459b98a06",
+      "update",
+      [
+       [
+        [
+         [],
+         []
+        ],
+        [
+         [
+          "2_86627179"
+         ],
+         []
+        ],
+        [
+         [],
+         []
+        ]
+       ],
+       null,
+       {
+        "createdTime": "2026-10-07T12:59:08.039Z",
+        "receivedTime": "2026-10-07T12:59:08.047Z",
+        "publishedTime": "2026-10-07T12:59:08.050Z"
+       }
+      ],
+      null,
+      [
+       {
+        "__ts__": 1791377948.0617476
+       },
+       0
+      ]
+     ]
+    },
+    {
+     "dir": "receive",
+     "t": 1791377947.7016659,
+     "opcode": 2,
+     "bytes": 953,
+     "raw_b64": "ldkkMjNhNmQyYmMtYzgxOS00MWQ3LWExYzEtNGQ3Njg3NjVmYTA3pnVwZGF0ZZOTlZCQkJCQk5CQkJORkhaaqDM0Nzg3NTUx1v9qxhEckpqmNDg2MzY3rEtUIFdpeiBTdXdvbqRIb21lpFRlYW2CrXJvc2V0dGFUZWFtSWSmNDg2MzY3r3Jvc2V0dGFUZWFtTmFtZaJrdAKia3SQwqJaWpqmNDg2NDgzrVNhbXN1bmcgTGlvbnOkQXdheaRUZWFtgq1yb3NldHRhVGVhbUlkpjQ4NjQ4M69yb3NldHRhVGVhbU5hbWWlTGlvbnMBpUxpb25zkMKiWlqnU1RBUlRFRJWjOXRowMLCwJOYwKFUzn////+hM6E5wIOnb25TZXJ2ZaEyrGJhc2ViYWxsQmFzZaEwrGJhc2ViYWxsT3V0c6EzwJqXwKExAaEwoTDAwJfAoTICoTChMsDAl8ChMwOhMKEwwMCXwKE0BKEwoTDAwJfAoTUFoTChMMDAl8ChNgahMKExwMCXwKE3B6EwoTHAwJfAoTgIoTChNcDAl8ChOQmhM6EwwMCXwKFUzn////+hM6E5wIOnb25TZXJ2ZaEyrGJhc2ViYWxsQmFzZaEwrGJhc2ViYWxsT3V0c6EzAZStTGl2ZVN0cmVhbWluZ6xNYXRjaFRyYWNrZXKqU2NvcmVib2FyZKVTdGF0c4KubWFzdGVyTGVhZ3VlSWSkMTU5NK1udW1iZXJPZlBhcnRzoTnODvAcrZfAk6E5oTOhUpmToTChMKExk6EyoTChMpOhMKEwoTOToTChMKE0k6EwoTChNZOhMaEwoTaToTGhMKE3k6E1oTChOJOhMKEzoTnAwJGToTChMKFIi6VhdEJhdKRhd2F5sWF3YXlDdXJyZW50QmF0dGVyoTCuYXdheU5leHRCYXR0ZXKhMLVhd2F5TmV4dFBsdXNPbmVCYXR0ZXKhMKViYWxsc6ExpWJhc2VzozAwMLFob21lQ3VycmVudEJhdHRlcqEwrmhvbWVOZXh0QmF0dGVyoTC1aG9tZU5leHRQbHVzT25lQmF0dGVypjIyODU4OKRvdXRzoTOnc3RyaWtlc6EykJDAg6tjcmVhdGVkVGltZbgyMDI2LTEwLTA3VDEyOjU5OjA4LjAzOFqscmVjZWl2ZWRUaW1luDIwMjYtMTAtMDdUMTI6NTk6MDguMDQ2Wq1wdWJsaXNoZWRUaW1luDIwMjYtMTAtMDdUMTI6NTk6MDguMDQ3WsCS1/8RmOUgasZCHAA=",
+     "decoded": [
+      "23a6d2bc-c819-41d7-a1c1-4d768765fa07",
+      "update",
+      [
+       [
+        [
+         [],
+         [],
+         [],
+         [],
+         []
+        ],
+        [
+         [],
+         [],
+         []
+        ],
+        [
+         [
+          [
+           22,
+           [
+            "34787551",
+            {
+             "__ts__": 1791365404.0
+            },
+            [
+             [
+              "486367",
+              "KT Wiz Suwon",
+              "Home",
+              "Team",
+              {
+               "rosettaTeamId": "486367",
+               "rosettaTeamName": "kt"
+              },
+              2,
+              "kt",
+              [],
+              false,
+              "ZZ"
+             ],
+             [
+              "486483",
+              "Samsung Lions",
+              "Away",
+              "Team",
+              {
+               "rosettaTeamId": "486483",
+               "rosettaTeamName": "Lions"
+              },
+              1,
+              "Lions",
+              [],
+              false,
+              "ZZ"
+             ]
+            ],
+            "STARTED",
+            [
+             "9th",
+             null,
+             false,
+             false,
+             null
+            ],
+            [
+             [
+              null,
+              "T",
+              2147483647,
+              "3",
+              "9",
+              null,
+              {
+               "onServe": "2",
+               "baseballBase": "0",
+               "baseballOuts": "3"
+              },
+              null
+             ],
+             [
+              [
+               null,
+               "1",
+               1,
+               "0",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "2",
+               2,
+               "0",
+               "2",
+               null,
+               null
+              ],
+              [
+               null,
+               "3",
+               3,
+               "0",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "4",
+               4,
+               "0",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "5",
+               5,
+               "0",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "6",
+               6,
+               "0",
+               "1",
+               null,
+               null
+              ],
+              [
+               null,
+               "7",
+               7,
+               "0",
+               "1",
+               null,
+               null
+              ],
+              [
+               null,
+               "8",
+               8,
+               "0",
+               "5",
+               null,
+               null
+              ],
+              [
+               null,
+               "9",
+               9,
+               "3",
+               "0",
+               null,
+               null
+              ],
+              [
+               null,
+               "T",
+               2147483647,
+               "3",
+               "9",
+               null,
+               {
+                "onServe": "2",
+                "baseballBase": "0",
+                "baseballOuts": "3"
+               }
+              ]
+             ],
+             1
+            ],
+            [
+             "LiveStreaming",
+             "MatchTracker",
+             "Scoreboard",
+             "Stats"
+            ],
+            {
+             "masterLeagueId": "1594",
+             "numberOfParts": "9"
+            },
+            250617005,
+            [
+             null,
+             [
+              "9",
+              "3",
+              "R"
+             ],
+             [
+              [
+               "0",
+               "0",
+               "1"
+              ],
+              [
+               "2",
+               "0",
+               "2"
+              ],
+              [
+               "0",
+               "0",
+               "3"
+              ],
+              [
+               "0",
+               "0",
+               "4"
+              ],
+              [
+               "0",
+               "0",
+               "5"
+              ],
+              [
+               "1",
+               "0",
+               "6"
+              ],
+              [
+               "1",
+               "0",
+               "7"
+              ],
+              [
+               "5",
+               "0",
+               "8"
+              ],
+              [
+               "0",
+               "3",
+               "9"
+              ]
+             ],
+             null,
+             null,
+             [
+              [
+               "0",
+               "0",
+               "H"
+              ]
+             ],
+             {
+              "atBat": "away",
+              "awayCurrentBatter": "0",
+              "awayNextBatter": "0",
+              "awayNextPlusOneBatter": "0",
+              "balls": "1",
+              "bases": "000",
+              "homeCurrentBatter": "0",
+              "homeNextBatter": "0",
+              "homeNextPlusOneBatter": "228588",
+              "outs": "3",
+              "strikes": "2"
+             }
+            ]
+           ]
+          ]
+         ],
+         [],
+         []
+        ]
+       ],
+       null,
+       {
+        "createdTime": "2026-10-07T12:59:08.038Z",
+        "receivedTime": "2026-10-07T12:59:08.046Z",
+        "publishedTime": "2026-10-07T12:59:08.047Z"
+       }
+      ],
+      null,
+      [
+       {
+        "__ts__": 1791377948.0738082
+       },
+       0
+      ]
+     ]
+    },
+    {
+     "dir": "receive",
+     "t": 1791377947.711684,
+     "opcode": 2,
+     "bytes": 200,
+     "raw_b64": "ldkkZGJiNDA0ZWUtNmFmNy00Y2IwLWIyOWEtZDUwYmZhMjgzZDRipnVwZGF0ZZOTlZCQkJCQk5GoMzQ3ODc1NTGQkJOQkJDAg6tjcmVhdGVkVGltZbgyMDI2LTEwLTA3VDEyOjU5OjA4LjAzOFqscmVjZWl2ZWRUaW1luDIwMjYtMTAtMDdUMTI6NTk6MDguMDQ2Wq1wdWJsaXNoZWRUaW1luDIwMjYtMTAtMDdUMTI6NTk6MDguMDQ4WsCS1/8Uh6CgasZCHAA=",
+     "decoded": [
+      "dbb404ee-6af7-4cb0-b29a-d50bfa283d4b",
+      "update",
+      [
+       [
+        [
+         [],
+         [],
+         [],
+         [],
+         []
+        ],
+        [
+         [
+          "34787551"
+         ],
+         [],
+         []
+        ],
+        [
+         [],
+         [],
+         []
+        ]
+       ],
+       null,
+       {
+        "createdTime": "2026-10-07T12:59:08.038Z",
+        "receivedTime": "2026-10-07T12:59:08.046Z",
+        "publishedTime": "2026-10-07T12:59:08.048Z"
+       }
+      ],
+      null,
+      [
+       {
+        "__ts__": 1791377948.0861082
+       },
+       0
+      ]
+     ]
+    },
+    {
+     "dir": "receive",
+     "t": 1791377947.712692,
+     "opcode": 2,
+     "bytes": 202,
+     "raw_b64": "ldkkZGJiNDA0ZWUtNmFmNy00Y2IwLWIyOWEtZDUwYmZhMjgzZDRipnVwZGF0ZZOTlZCQkJCQk5CRqjJfODY2MjcxNzmQk5CQkMCDq2NyZWF0ZWRUaW1luDIwMjYtMTAtMDdUMTI6NTk6MDguMDM5WqxyZWNlaXZlZFRpbWW4MjAyNi0xMC0wN1QxMjo1OTowOC4wNDdarXB1Ymxpc2hlZFRpbWW4MjAyNi0xMC0wN1QxMjo1OTowOC4wNDlawJLX/xSICVBqxkIcAA==",
+     "decoded": [
+      "dbb404ee-6af7-4cb0-b29a-d50bfa283d4b",
+      "update",
+      [
+       [
+        [
+         [],
+         [],
+         [],
+         [],
+         []
+        ],
+        [
+         [],
+         [
+          "2_86627179"
+         ],
+         []
+        ],
+        [
+         [],
+         [],
+         []
+        ]
+       ],
+       null,
+       {
+        "createdTime": "2026-10-07T12:59:08.039Z",
+        "receivedTime": "2026-10-07T12:59:08.047Z",
+        "publishedTime": "2026-10-07T12:59:08.049Z"
+       }
+      ],
+      null,
+      [
+       {
+        "__ts__": 1791377948.086115
+       },
+       0
+      ]
+     ]
+    },
+    {
+     "dir": "receive",
+     "t": 1791377947.7131839,
+     "opcode": 2,
+     "bytes": 209,
+     "raw_b64": "ldkkZGJiNDA0ZWUtNmFmNy00Y2IwLWIyOWEtZDUwYmZhMjgzZDRipnVwZGF0ZZOTlZCQkJCQk5CQkbEwSEM4NjYyNzE3OU41NTBfMZOQkJDAg6tjcmVhdGVkVGltZbgyMDI2LTEwLTA3VDEyOjU5OjA4LjAzOVqscmVjZWl2ZWRUaW1luDIwMjYtMTAtMDdUMTI6NTk6MDguMDQ2Wq1wdWJsaXNoZWRUaW1luDIwMjYtMTAtMDdUMTI6NTk6MDguMDUxWsCS1/8UiEZAasZCHAA=",
+     "decoded": [
+      "dbb404ee-6af7-4cb0-b29a-d50bfa283d4b",
+      "update",
+      [
+       [
+        [
+         [],
+         [],
+         [],
+         [],
+         []
+        ],
+        [
+         [],
+         [],
+         [
+          "0HC86627179N550_1"
+         ]
+        ],
+        [
+         [],
+         [],
+         []
+        ]
+       ],
+       null,
+       {
+        "createdTime": "2026-10-07T12:59:08.039Z",
+        "receivedTime": "2026-10-07T12:59:08.046Z",
+        "publishedTime": "2026-10-07T12:59:08.051Z"
+       }
+      ],
+      null,
+      [
+       {
+        "__ts__": 1791377948.086119
+       },
+       0
+      ]
+     ]
+    },
+    {
+     "dir": "receive",
+     "t": 1791377947.834976,
+     "opcode": 2,
+     "bytes": 204,
+     "raw_b64": "ldkkMzI1MDJjYjAtNzRhYi00MTgzLWFmNmMtOTBjNDU5Yjk4YTA2pnVwZGF0ZZOTkpCQkpCRsTBIQzg2NjI3MTc5TjU1MF8xkpCQwIOrY3JlYXRlZFRpbWW4MjAyNi0xMC0wN1QxMjo1OTowOC4wMzlarHJlY2VpdmVkVGltZbgyMDI2LTEwLTA3VDEyOjU5OjA4LjA0NlqtcHVibGlzaGVkVGltZbgyMDI2LTEwLTA3VDEyOjU5OjA4LjA1MVrAktf/LHHNMGrGQhwA",
+     "decoded": [
+      "32502cb0-74ab-4183-af6c-90c459b98a06",
+      "update",
+      [
+       [
+        [
+         [],
+         []
+        ],
+        [
+         [],
+         [
+          "0HC86627179N550_1"
+         ]
+        ],
+        [
+         [],
+         []
+        ]
+       ],
+       null,
+       {
+        "createdTime": "2026-10-07T12:59:08.039Z",
+        "receivedTime": "2026-10-07T12:59:08.046Z",
+        "publishedTime": "2026-10-07T12:59:08.051Z"
+       }
+      ],
+      null,
+      [
+       {
+        "__ts__": 1791377948.1864138
+       },
+       0
+      ]
+     ]
+    },
+    {
+     "dir": "receive",
+     "t": 1791377947.835669,
+     "opcode": 2,
+     "bytes": 204,
+     "raw_b64": "ldkkMzI1MDJjYjAtNzRhYi00MTgzLWFmNmMtOTBjNDU5Yjk4YTA2pnVwZGF0ZZOTkpCQkpCRsTBIQzg2NjI3MTc5UDU1MF8zkpCQwIOrY3JlYXRlZFRpbWW4MjAyNi0xMC0wN1QxMjo1OTowOC4wMzlarHJlY2VpdmVkVGltZbgyMDI2LTEwLTA3VDEyOjU5OjA4LjA0N1qtcHVibGlzaGVkVGltZbgyMDI2LTEwLTA3VDEyOjU5OjA4LjA1MlrAktf/LHK5IGrGQhwA",
+     "decoded": [
+      "32502cb0-74ab-4183-af6c-90c459b98a06",
+      "update",
+      [
+       [
+        [
+         [],
+         []
+        ],
+        [
+         [],
+         [
+          "0HC86627179P550_3"
+         ]
+        ],
+        [
+         [],
+         []
+        ]
+       ],
+       null,
+       {
+        "createdTime": "2026-10-07T12:59:08.039Z",
+        "receivedTime": "2026-10-07T12:59:08.047Z",
+        "publishedTime": "2026-10-07T12:59:08.052Z"
+       }
+      ],
+      null,
+      [
+       {
+        "__ts__": 1791377948.186429
+       },
+       0
+      ]
+     ]
+    },
+    {
+     "dir": "receive",
+     "t": 1791377947.837529,
+     "opcode": 2,
+     "bytes": 209,
+     "raw_b64": "ldkkZGJiNDA0ZWUtNmFmNy00Y2IwLWIyOWEtZDUwYmZhMjgzZDRipnVwZGF0ZZOTlZCQkJCQk5CQkbEwSEM4NjYyNzE3OVA1NTBfM5OQkJDAg6tjcmVhdGVkVGltZbgyMDI2LTEwLTA3VDEyOjU5OjA4LjAzOVqscmVjZWl2ZWRUaW1luDIwMjYtMTAtMDdUMTI6NTk6MDguMDQ3Wq1wdWJsaXNoZWRUaW1luDIwMjYtMTAtMDdUMTI6NTk6MDguMDUyWsCS1/8tLHpAasZCHAA=",
+     "decoded": [
+      "dbb404ee-6af7-4cb0-b29a-d50bfa283d4b",
+      "update",
+      [
+       [
+        [
+         [],
+         [],
+         [],
+         [],
+         []
+        ],
+        [
+         [],
+         [],
+         [
+          "0HC86627179P550_3"
+         ]
+        ],
+        [
+         [],
+         [],
+         []
+        ]
+       ],
+       null,
+       {
+        "createdTime": "2026-10-07T12:59:08.039Z",
+        "receivedTime": "2026-10-07T12:59:08.047Z",
+        "publishedTime": "2026-10-07T12:59:08.052Z"
+       }
+      ],
+      null,
+      [
+       {
+        "__ts__": 1791377948.1894724
+       },
+       0
+      ]
+     ]
+    }
+   ]
+  }
+ ]
+}

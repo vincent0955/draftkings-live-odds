@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NFL Odds · DraftKings</title>
+<style>
+  :root {
+    --bg: #f6f7f9; --panel: #fff; --ink: #14171a; --muted: #687078; --line: #e3e6ea;
+    --up: #e3f6e8; --up-ink: #116b2e; --down: #fde7e7; --down-ink: #a1261f; --move: #fff4d6;
+    --warn-bg: #fff4d6; --warn-ink: #6b4b00; --bad-bg: #fde7e7; --bad-ink: #8a1c16;
+    --pill-live: #116b2e; --pill-other: #8a5a00; --pill-bad: #a1261f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #0f1214; --panel: #171b1f; --ink: #e8ebee; --muted: #8b949c; --line: #262c32;
+      --up: #12321d; --up-ink: #7ee09b; --down: #3a1614; --down-ink: #ff9a91; --move: #3a2f10;
+      --warn-bg: #3a2f10; --warn-ink: #ffd47a; --bad-bg: #3a1614; --bad-ink: #ffb1aa;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 14px/1.4 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { padding: 16px; display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; }
+  h1 { font-size: 18px; margin: 0; }
+  .muted { color: var(--muted); }
+  .pill { display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600;
+          color: #fff; background: var(--pill-other); }
+  .pill.live { background: var(--pill-live); }
+  .pill.bad { background: var(--pill-bad); }
+  .banner { display: none; margin: 0 16px 12px; padding: 10px 12px; border-radius: 8px; }
+  .banner.warn { display: block; background: var(--warn-bg); color: var(--warn-ink); }
+  .banner.bad { display: block; background: var(--bad-bg); color: var(--bad-ink); }
+  main { padding: 0 16px 16px; }
+  .wrap { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+  table { border-collapse: collapse; width: 100%; min-width: 620px; }
+  th, td { padding: 6px 10px; text-align: left; white-space: nowrap; }
+  th { font-size: 12px; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--line); }
+  tr.day td { background: var(--bg); font-weight: 600; font-size: 12px; color: var(--muted); padding-top: 10px; }
+  tr.home td { border-bottom: 1px solid var(--line); }
+  td.time { color: var(--muted); font-size: 12px; width: 90px; }
+  td.team { font-weight: 500; }
+  td.odds { width: 150px; font-variant-numeric: tabular-nums; transition: background-color 1.5s; }
+  .odds .main { font-weight: 600; }
+  .odds .line { color: var(--muted); margin-right: 6px; }
+  .odds .was { display: block; font-size: 11px; color: var(--muted); }
+  .odds.up { background: var(--up); } .odds.up .main { color: var(--up-ink); }
+  .odds.down { background: var(--down); } .odds.down .main { color: var(--down-ink); }
+  .odds.moved { background: var(--move); }
+  .odds.susp .main, .odds.susp .line { color: var(--muted); text-decoration: line-through; }
+  .tag { font-size: 10px; font-weight: 700; color: var(--muted); border: 1px solid var(--line);
+         border-radius: 4px; padding: 0 4px; margin-left: 6px; }
+  footer { padding: 0 16px 24px; color: var(--muted); font-size: 12px; }
+  footer table { min-width: 0; width: auto; }
+  footer td, footer th { padding: 2px 12px 2px 0; }
+  a { color: inherit; }
+</style>
+</head>
+<body>
+<header>
+  <h1>NFL odds <span class="muted">· DraftKings</span></h1>
+  <span id="pill" class="pill">connecting</span>
+  <span id="confirmed" class="muted"></span>
+  <span id="site" class="muted"></span>
+</header>
+<div id="banner" class="banner"></div>
+<main>
+  <div class="wrap">
+    <table>
+      <thead><tr><th>Kickoff</th><th>Team</th><th>Spread</th><th>Total</th><th>Moneyline</th></tr></thead>
+      <tbody id="rows"><tr><td colspan="5" class="muted">Loading…</td></tr></tbody>
+    </table>
+  </div>
+</main>
+<footer>
+  <p>Green / red = price got longer / shorter. Yellow = the line itself moved. "was" shows the previous price for 2 minutes.</p>
+  <table id="lat"></table>
+  <p id="counters"></p>
+  <p><a href="/health">/health</a> · <a href="/api/odds">/api/odds</a></p>
+</footer>
+<script>
+"use strict";
+const SHOW_PREV_MS = 120000, FLASH_MS = 3000, STATUS_TIMEOUT_MS = 6000, STALE_AFTER_S = 30;
+const state = { games: [], status: null, statusAt: 0, connected: false, lastConfirmedWall: null };
+const latencySamples = [];
+let clockOffsetMs = 0, bestRtt = Infinity;  // server clock - browser clock
+
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const fmtOdds = n => n == null ? "—" : (n > 0 ? "+" + n : "−" + Math.abs(n));
+const fmtLine = (kind, side, l) => l == null ? "" :
+  kind === "total" ? (side === "over" ? "O " : "U ") + l : (l > 0 ? "+" + l : l === 0 ? "PK" : "−" + Math.abs(l));
+const clock = ts => ts ? new Date(ts * 1000).toLocaleTimeString() : "never";
+const ago = s => s == null ? "" : s < 60 ? Math.round(s) + "s" : s < 3600 ? Math.round(s / 60) + "m" : Math.round(s / 3600) + "h";
+
+// --- rendering -------------------------------------------------------------
+const CELLS = [["spread", "away", "home"], ["total", "over", "under"], ["moneyline", "away", "home"]];
+
+function cellHtml(game, kind, side) {
+  const m = game.markets[kind];
+  const o = m && m.outcomes[side];
+  if (!o) return "—";
+  const now = Date.now() / 1000;
+  const showPrev = o.changed_at && now - o.changed_at < SHOW_PREV_MS / 1000 &&
+                   (o.prev_american != null || o.prev_line != null);
+  let html = "";
+  if (!o.available) html = `<span class="main">—</span><span class="tag">OFF</span>`;
+  else html = (kind === "moneyline" ? "" : `<span class="line">${fmtLine(kind, side, o.line)}</span>`) +
+              `<span class="main">${fmtOdds(o.american)}</span>` + (m.suspended ? `<span class="tag">SUSP</span>` : "");
+  if (showPrev) {
+    const lineChanged = o.prev_line != null && o.prev_line !== o.line;
+    html += `<span class="was">was ${lineChanged ? fmtLine(kind, side, o.prev_line) + " " : ""}${fmtOdds(o.prev_american)} · ${ago(now - o.changed_at)} ago</span>`;
+  }
+  return html;
+}
+
+function renderBoard() {
+  const rows = [];
+  let lastDay = null;
+  for (const g of state.games) {
+    const d = g.start ? new Date(g.start * 1000) : null;
+    const day = d ? d.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" }) : "TBD";
+    if (day !== lastDay) { rows.push(`<tr class="day"><td colspan="5">${esc(day)}</td></tr>`); lastDay = day; }
+    const time = d ? d.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : "";
+    const live = g.status && g.status !== "NOT_STARTED" ? ` <span class="tag">${esc(g.status)}</span>` : "";
+    for (const [row, idx] of [["away", 1], ["home", 2]]) {
+      const cells = CELLS.map(([kind, a, h]) => {
+        const side = row === "away" ? a : h;
+        const m = g.markets[kind];
+        const susp = m && m.suspended ? " susp" : "";
+        return `<td class="odds${susp}" id="c-${esc(m ? m.id : g.id + kind)}-${side}">${cellHtml(g, kind, side)}</td>`;
+      }).join("");
+      rows.push(`<tr class="${row}"><td class="time">${row === "away" ? esc(time) + live : ""}</td>` +
+                `<td class="team">${esc(row === "away" ? g.away : g.home)}</td>${cells}</tr>`);
+    }
+  }
+  $("rows").innerHTML = rows.join("") || `<tr><td colspan="5" class="muted">No games on the board.</td></tr>`;
+}
+
+function findMarket(marketId) {
+  for (const g of state.games) for (const [kind, m] of Object.entries(g.markets)) if (m.id === marketId) return [g, kind, m];
+  return [];
+}
+
+function refreshCell(g, kind, side, flash) {
+  const m = g.markets[kind];
+  const el = document.getElementById(`c-${m.id}-${side}`);
+  if (!el) return;
+  el.innerHTML = cellHtml(g, kind, side);
+  el.classList.toggle("susp", !!m.suspended);
+  if (flash) {
+    el.classList.remove("up", "down", "moved");
+    void el.offsetWidth;  // restart the transition
+    el.classList.add(flash);
+    clearTimeout(el._t);
+    el._t = setTimeout(() => el.classList.remove(flash), FLASH_MS);
+  }
+}
+
+function applyChanges(events) {
+  for (const ev of events) {
+    if (ev.type === "outcome") {
+      const [g, kind, m] = findMarket(ev.market_id);
+      if (!g) continue;
+      const before = m.outcomes[ev.side];
+      m.outcomes[ev.side] = ev;
+      let flash = null;
+      if (before && ev.available) {
+        if (before.line !== ev.line) flash = "moved";
+        else if (ev.american > before.american) flash = "up";
+        else if (ev.american < before.american) flash = "down";
+      }
+      refreshCell(g, kind, ev.side, flash);
+    } else if (ev.type === "market") {
+      const [g, kind, m] = findMarket(ev.market_id);
+      if (!g) continue;
+      m.suspended = ev.suspended;
+      for (const side of Object.keys(m.outcomes)) refreshCell(g, kind, side, null);
+    } else if (ev.type === "game") {
+      const g = state.games.find(x => x.id === ev.game_id);
+      if (g) { g.status = ev.status; renderBoard(); }
+    }
+  }
+}
+
+// --- status / staleness ----------------------------------------------------
+function renderStatus() {
+  const s = state.status;
+  const pill = $("pill"), banner = $("banner");
+  const sinceStatus = Date.now() - state.statusAt;
+  const confirmedAge = s && s.confirmed_age != null ? s.confirmed_age + sinceStatus / 1000 : null;
+  const lastConfirmed = s && s.last_confirmed_at ? clock(s.last_confirmed_at) : "never";
+  let problem = null, level = "warn";
+
+  if (!state.connected || sinceStatus > STATUS_TIMEOUT_MS) {
+    problem = `Lost connection to this site's server. Reconnecting… The odds below were last confirmed at ${lastConfirmed} and may be out of date.`;
+    level = "bad";
+  } else if (s && (s.state === "connecting" || s.state === "down" || s.state === "starting")) {
+    problem = `DraftKings live feed interrupted (${s.state}, ${s.reconnects} reconnects). Odds last confirmed at ${lastConfirmed} and may be out of date.`;
+    level = s.state === "down" ? "bad" : "warn";
+  } else if (s && s.state === "polling") {
+    problem = `DraftKings live feed is down; refreshing every few seconds instead. Last confirmed ${lastConfirmed}.`;
+  } else if (confirmedAge != null && confirmedAge > STALE_AFTER_S) {
+    problem = `No confirmation from DraftKings for ${ago(confirmedAge)}. Odds may be stale.`;
+  }
+  banner.className = "banner" + (problem ? " " + level : "");
+  banner.textContent = problem || "";
+
+  const label = s ? ({ live: "LIVE", polling: "POLLING", replay: "REPLAY", simulate: "SIMULATED" }[s.state] || s.state.toUpperCase()) : "connecting";
+  pill.textContent = problem && level === "bad" ? "STALE" : label;
+  pill.className = "pill" + (problem && level === "bad" ? " bad" : s && s.state === "live" && !problem ? " live" : "");
+  $("confirmed").textContent = confirmedAge != null ? `odds confirmed current ${ago(confirmedAge)} ago` : "";
+  if (s) document.querySelector("h1").firstChild.textContent = s.source === "replay" ? "Replay: recorded live match " : "NFL odds ";
+  $("site").textContent = s ? s.site + (s.ping_ms ? ` · ping ${Math.round(s.ping_ms)} ms` : "") : "";
+}
+
+function renderLatency() {
+  const s = state.status;
+  if (!s) return;
+  const L = s.latency || {};
+  const row = (name, key) => {
+    const v = L[key] || {};
+    return `<tr><td>${name}</td><td>${v.n ? v.p50 + " ms" : "—"}</td><td>${v.n ? v.p95 + " ms" : "—"}</td><td>${v.n || 0}</td></tr>`;
+  };
+  const p = k => (L[k] && L[k].n) ? L[k].p50 : null;
+  const parts = [p("dk_to_server"), p("server_to_browser")];
+  const total = parts.every(x => x != null) ? Math.round(parts[0] + parts[1]) + " ms" : "—";
+  $("lat").innerHTML = `<tr><th>Latency</th><th>p50</th><th>p95</th><th>n</th></tr>` +
+    row("DraftKings internal (created → published)", "dk_internal") +
+    row("DraftKings published → our server", "dk_to_server") +
+    row("our server → your browser", "server_to_browser") +
+    `<tr><td><b>DraftKings publish → your screen (p50 sum)</b></td><td><b>${total}</b></td><td></td><td></td></tr>` +
+    (L.dk_clock && L.dk_clock.uncertainty_ms != null ? `<tr><td colspan="4">DraftKings' clock vs our server: ${L.dk_clock.offset_ms > 0 ? "+" : ""}${L.dk_clock.offset_ms} ms (±${L.dk_clock.uncertainty_ms} ms), corrected for above</td></tr>` : "");
+  const c = s.counters || {};
+  $("counters").textContent = `${s.games} games · ${c.updates || 0} socket updates · ${c.changes || 0} changes applied · ` +
+    `${s.reconnects} reconnects · ${c.drift_fixed || 0} drift corrections · ${c.invalid_rows || 0} invalid rows dropped · ` +
+    `${c.dropped_out_of_order || 0} out-of-order dropped`;
+}
+
+// --- latency measurement ---------------------------------------------------
+async function syncClock() {
+  try {
+    const t0 = Date.now();
+    const r = await fetch("/api/time", { cache: "no-store" });
+    const t1 = Date.now();
+    const { server_time } = await r.json();
+    const rtt = t1 - t0;
+    if (rtt <= bestRtt * 1.5) { clockOffsetMs = server_time * 1000 - (t0 + t1) / 2; bestRtt = Math.min(bestRtt, rtt); }
+  } catch (_) {}
+}
+async function flushLatency() {
+  if (!latencySamples.length) return;
+  const samples = latencySamples.splice(0);
+  try { await fetch("/api/latency", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ samples }) }); } catch (_) {}
+}
+
+// --- stream ----------------------------------------------------------------
+let visibleSince = document.hidden ? Infinity : performance.now();
+document.addEventListener("visibilitychange", () => {
+  visibleSince = document.hidden ? Infinity : performance.now();
+});
+
+function connect() {
+  const es = new EventSource("/api/stream");
+  es.onopen = () => { state.connected = true; renderStatus(); };
+  es.onerror = () => { state.connected = false; renderStatus(); };  // EventSource retries by itself
+  es.addEventListener("board", e => {
+    const d = JSON.parse(e.data);
+    state.games = d.games; state.status = d.status; state.statusAt = Date.now();
+    renderBoard(); renderStatus(); renderLatency();
+  });
+  es.addEventListener("changes", e => {
+    const d = JSON.parse(e.data);
+    // Browsers hold back events for hidden tabs, and release them in a burst
+    // when the tab comes back. Only measure while the page has been visible
+    // for a couple of seconds, so the number reflects the app, not Chrome.
+    if (!document.hidden && performance.now() - visibleSince > 2000)
+      latencySamples.push(Date.now() + clockOffsetMs - d.server_emit * 1000);
+    applyChanges(d.events);
+  });
+  es.addEventListener("status", e => {
+    state.status = JSON.parse(e.data); state.statusAt = Date.now();
+    renderStatus(); renderLatency();
+  });
+}
+
+connect();
+syncClock(); setInterval(syncClock, 30000);
+setInterval(flushLatency, 10000);
+setInterval(renderStatus, 1000);
+setInterval(() => {  // let "was …" labels expire
+  for (const g of state.games) for (const [kind, m] of Object.entries(g.markets))
+    for (const side of Object.keys(m.outcomes)) {
+      const o = m.outcomes[side];
+      if (o.changed_at && Date.now() / 1000 - o.changed_at < SHOW_PREV_MS / 1000 + 5) refreshCell(g, kind, side, null);
+    }
+}, 5000);
+</script>
+</body>
+</html>

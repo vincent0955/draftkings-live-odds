@@ -1,0 +1,11 @@
+# raw browser captures: large, and not meant for a public repo
+*.har
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.env
+
+# the assignment itself
+*.pdf

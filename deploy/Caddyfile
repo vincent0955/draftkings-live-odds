@@ -1,0 +1,7 @@
+# Replace with your instance's public IP using dashes, e.g. 3-91-12-34.sslip.io
+# sslip.io resolves that name to the IP, so Caddy can get a real HTTPS cert for free.
+YOUR-IP-WITH-DASHES.sslip.io {
+	reverse_proxy 127.0.0.1:8000 {
+		flush_interval -1
+	}
+}
