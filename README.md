@@ -57,8 +57,9 @@ Measured on a recorded live match:
 |---|---|---|
 | DraftKings' own processing (created to published) | 23 ms | 76 ms |
 | DraftKings to my laptop in Japan, through a US VPN | 128 ms | 152 ms |
+| DraftKings to our server on AWS (first 2 NFL line moves) | 39 ms | |
 
-I don't have AWS numbers yet. No NFL game ran between the deploy and the deadline, and pregame lines barely moved. The socket round trip from AWS to DraftKings is 19 to 36 ms, so it should beat the laptop by a lot. Thursday Night Football (TB @ DAL) is the first live NFL game, and the page will show the real numbers from then on.
+The AWS number is a small sample. No NFL game ran between the deploy and the deadline, and pregame lines barely move. Thursday Night Football (TB @ DAL) is the first live NFL game, and the page keeps measuring from then on.
 
 **Staleness:** "checked 3s ago" in the header means the feed was confirmed alive 3 seconds ago, not that a line moved then. A line can sit still for hours and still be current. The server pings DraftKings every 5 seconds. If confirmation stops for 30 seconds, or the page loses the server, a warning appears saying the odds may be out of date.
 
