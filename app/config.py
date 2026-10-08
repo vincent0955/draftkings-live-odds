@@ -10,6 +10,17 @@ UA = (
 ORIGIN = "https://sportsbook.draftkings.com"
 
 
+def normalize_proxy(raw: str) -> str:
+    s = (raw or "").strip()
+    if not s or "://" in s:
+        return s
+    parts = s.split(":", 3)
+    if len(parts) == 4 and parts[1].isdigit():  # host:port:user:pass, the usual dashboard copy format
+        host, port, user, password = parts
+        return f"http://{quote(user, safe='')}:{quote(password, safe='')}@{host}:{port}"
+    return "http://" + s  # user:pass@host:port or host:port
+
+
 def _env(name: str, default: str) -> str:
     return os.environ.get(name, default)
 
@@ -45,11 +56,17 @@ class Config:
     http_timeout: float = 10.0
 
     @property
+    def proxy_url(self) -> str:
+        """DK_HTTP_PROXY as a URL httpx accepts. Providers hand out several
+        formats; accepted: scheme://user:pass@host:port, user:pass@host:port,
+        host:port:user:pass and host:port."""
+        return normalize_proxy(self.http_proxy)
+
+    @property
     def proxy_label(self) -> str:
-        """Proxy host without credentials, safe to show."""
-        if not self.http_proxy:
-            return "none"
-        return self.http_proxy.split("@")[-1].split("://")[-1]
+        """Proxy host:port without credentials, safe to show."""
+        url = self.proxy_url
+        return url.split("@")[-1].split("://")[-1] if url else "none"
 
     @property
     def site_code(self) -> str:

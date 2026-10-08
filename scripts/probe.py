@@ -27,7 +27,7 @@ async def probe_rest(cfg: Config) -> bool:
     print(f"\n[{cfg.state}] REST via proxy {cfg.proxy_label}: {cfg.snapshot_url[:90]}...")
     t = time.time()
     try:
-        async with httpx.AsyncClient(http2=False, proxy=cfg.http_proxy or None) as client:
+        async with httpx.AsyncClient(http2=False, proxy=cfg.proxy_url or None) as client:
             resp = await client.get(cfg.snapshot_url, headers=cfg.http_headers, timeout=15)
     except Exception as e:
         print(f"  FAIL  request error: {e!r}")

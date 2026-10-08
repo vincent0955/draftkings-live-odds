@@ -59,3 +59,14 @@ def test_parsers():
     assert parse.iso_ts("2026-10-09T00:15:00.0000000Z") == 1791504900.0
     assert parse.iso_ts("2026-10-07T13:00:09.095Z") == pytest.approx(1791378009.095)
     assert parse.market_kind(1, "Run Line") == "spread"  # baseball works without new mapping
+
+
+def test_proxy_formats():
+    from app.config import Config, normalize_proxy
+    assert normalize_proxy("gate.example.com:7000:user-x:p@ss") == "http://user-x:p%40ss@gate.example.com:7000"
+    assert normalize_proxy("user:pw@gate.example.com:7000") == "http://user:pw@gate.example.com:7000"
+    assert normalize_proxy("socks5://u:p@h:1080") == "socks5://u:p@h:1080"
+    assert normalize_proxy("h:8080") == "http://h:8080"
+    assert normalize_proxy("") == ""
+    c = Config(http_proxy="gate.example.com:7000:user-x:secret")
+    assert c.proxy_label == "gate.example.com:7000" and "secret" not in repr(c)

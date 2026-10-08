@@ -80,7 +80,7 @@ class LiveFeed:
 
     async def run(self) -> None:
         # REST may go through a proxy (DK_HTTP_PROXY); the socket below never does.
-        async with httpx.AsyncClient(proxy=self.cfg.http_proxy or None) as client:
+        async with httpx.AsyncClient(proxy=self.cfg.proxy_url or None) as client:
             self.client = client
             reconciler = asyncio.create_task(self._reconcile_loop())
             attempt = 0
@@ -191,7 +191,9 @@ class LiveFeed:
         except Exception as e:
             first = self.status.snapshot != "browser"
             self.status.snapshot = "browser"
-            err = str(e).replace(self.cfg.http_proxy, "<proxy>") if self.cfg.http_proxy else str(e)
+            err = str(e)
+            for secret in {self.cfg.http_proxy, self.cfg.proxy_url} - {""}:
+                err = err.replace(secret, "<proxy>")
             self.status.snapshot_error = f"{type(e).__name__}: {err}"[:200]
             if first:
                 self.status.note(f"REST snapshot unavailable from this server ({self.status.snapshot_error}); "
