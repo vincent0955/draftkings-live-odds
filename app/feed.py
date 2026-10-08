@@ -79,7 +79,8 @@ class LiveFeed:
         self._resync = asyncio.Event()
 
     async def run(self) -> None:
-        async with httpx.AsyncClient() as client:
+        # REST may go through a proxy (DK_HTTP_PROXY); the socket below never does.
+        async with httpx.AsyncClient(proxy=self.cfg.http_proxy or None) as client:
             self.client = client
             reconciler = asyncio.create_task(self._reconcile_loop())
             attempt = 0
@@ -175,8 +176,8 @@ class LiveFeed:
                 self.status.state = "live"
                 self.status.connected_since = now
                 self.status.last_confirmed_at = now
-                self.status.note(f"live: {len(self.book.games)} games from REST, board source: {self.status.snapshot}, "
-                                 f"subscribed to {cfg.site_name}")
+                self.status.note(f"live: {len(self.book.games)} games from REST (proxy: {cfg.proxy_label}), "
+                                 f"board source: {self.status.snapshot}, subscribed to {cfg.site_name}")
                 done, _ = await asyncio.wait({reader_task, heartbeat_task}, return_when=asyncio.FIRST_COMPLETED)
                 for t in done:
                     t.result()  # re-raise the reason we stopped
@@ -190,7 +191,8 @@ class LiveFeed:
         except Exception as e:
             first = self.status.snapshot != "browser"
             self.status.snapshot = "browser"
-            self.status.snapshot_error = f"{type(e).__name__}: {e}"[:200]
+            err = str(e).replace(self.cfg.http_proxy, "<proxy>") if self.cfg.http_proxy else str(e)
+            self.status.snapshot_error = f"{type(e).__name__}: {err}"[:200]
             if first:
                 self.status.note(f"REST snapshot unavailable from this server ({self.status.snapshot_error}); "
                                  "browsers will load the board directly, socket changes still stream")

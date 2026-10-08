@@ -33,11 +33,23 @@ class Config:
     ws_url_override: str = field(default_factory=lambda: _env("DK_WS_URL", ""))
     snapshot_url_override: str = field(default_factory=lambda: _env("DK_SNAPSHOT_URL", ""))
 
+    # Optional proxy for the REST snapshot only (http://user:pass@host:port or
+    # socks5://...). DraftKings' CDN blocks REST from cloud IPs; the socket is
+    # not blocked and always connects directly. Never logged.
+    http_proxy: str = field(default_factory=lambda: _env("DK_HTTP_PROXY", ""), repr=False)
+
     reconcile_seconds: float = field(default_factory=lambda: float(_env("RECONCILE_SECONDS", "60")))
     poll_seconds: float = field(default_factory=lambda: float(_env("POLL_SECONDS", "5")))
     ping_interval: float = 10.0
     ping_timeout: float = 10.0
     http_timeout: float = 10.0
+
+    @property
+    def proxy_label(self) -> str:
+        """Proxy host without credentials, safe to show."""
+        if not self.http_proxy:
+            return "none"
+        return self.http_proxy.split("@")[-1].split("://")[-1]
 
     @property
     def site_code(self) -> str:
