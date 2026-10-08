@@ -45,3 +45,9 @@ If the WebSocket drops, the server reconnects and checks the API every 5 seconds
 - **Plus your own network delay** from our server to your browser.
 
 The top of the page shows both numbers live, measured on every line move. "checked 3s ago" in the header means the connection to DraftKings was confirmed 3 seconds ago (the server pings it every 5 seconds). If that stops for 30 seconds, the page warns that the odds may be out of date.
+
+## Adding a second sportsbook or league
+
+- **Another league** is mostly config. The league and category IDs are settings (`DK_LEAGUE_ID`, `DK_SUBCATEGORY_ID`), and DraftKings labels moneyline, spread and total the same way in every sport.
+- **Another sportsbook** is one new adapter that turns that book's feed into the same changes (game, market, side, line, odds). The rest of the app stays the same. The hard part is matching the same game across books ("LA Rams" vs "Los Angeles Rams").
+- **Where AI helps:** drafting a new adapter from recorded traffic (the way this one was built), building the team and market name mapping, and flagging when a book changes its format (a jump in rejected rows).
