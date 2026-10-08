@@ -20,18 +20,19 @@ Other modes, no DraftKings access needed:
 ```
 SOURCE=replay   python -m app    # replays 5 min of a real recorded live match (DraftKings' original bytes)
 SOURCE=simulate python -m app    # fake NFL moves, suspensions and line moves, in DraftKings' wire format
-python -m pytest                 # 33 tests, all against captured DraftKings data or a fake DraftKings server
+python -m pytest                 # 34 tests, all against captured DraftKings data or a fake DraftKings server
 python scripts/probe.py --states IL,NJ   # can this machine reach DraftKings?
 ```
 
 On Windows PowerShell set env vars with `$env:SOURCE="replay"` first.
 
+If DraftKings blocks the machine's IP for the REST call (it does on AWS), set `DK_HTTP_PROXY` to a US proxy. It accepts `http://user:pass@host:port`, `socks5://...`, or the `host:port:user:pass` format proxy providers hand out.
+
 ## How it works
 
 ```
 DraftKings socket (msgpack, diffs) ──> server: odds book in memory ──SSE──> browsers
-DraftKings REST (full snapshot) ─────> the server, if DraftKings lets it
-                                  └──> otherwise each browser, directly (see "What happened on AWS")
+DraftKings REST (full snapshot) ─────> server (through a US proxy on AWS, see "What happened on AWS")
 ```
 
 1. The server opens one WebSocket to DraftKings and subscribes to NFL game lines, using the same subscription DraftKings' own NFL page sends.
@@ -41,7 +42,7 @@ DraftKings REST (full snapshot) ─────> the server, if DraftKings lets 
 
 The page is plain HTML and JS. It gets the full board on connect and then only changes.
 
-On AWS, step 2 is different, because DraftKings blocks the REST call from AWS IPs. The browser loads the board from DraftKings itself, and the server streams the socket changes on top. Details below.
+On AWS, the REST calls in steps 2 and 4 go through a proxy, because DraftKings blocks them from AWS IPs. The socket connects directly. Details below.
 
 ## Why this approach
 
@@ -73,32 +74,34 @@ Each update has three groups: inserts, deletes, changes. Objects are positional 
 
 - **Geo:** blocked from Japan. A US VPN (Windscribe) worked in the browser. DraftKings picked Illinois from the VPN IP, and the state is in every URL (`US-IL-SB`, `dkusil`, `ws-us-il`). Odds can differ slightly by state, so this app uses Illinois (configurable with `DK_STATE`).
 - **Cookies / tokens:** none needed as far as I can tell. The REST response has `access-control-allow-origin: *`, which browsers only accept for requests sent without cookies. The socket "token" is the literal string `default-token`, so nothing expires.
-- **Bot protection:** Akamai sits in front of the REST host and returns 403 "Access Denied" to AWS IPs. See the next section.
+- **Bot protection:** Akamai sits in front of the REST host and returns 403 "Access Denied" to AWS IPs. It also blocks visitors outside the US. See the next section.
 - **Rate limits:** the app makes one socket connection plus one REST call a minute, the same as one person with the page open.
 
 ## What happened on AWS
 
 `scripts/probe.py` on the new EC2 instance (us-east-1):
 
-- REST snapshot: **403 Access Denied** from `AkamaiGHost`, for the IL, NJ and VA sites alike.
+- REST snapshot: **403 Access Denied** from `AkamaiGHost`, for the IL, NJ and VA sites alike, over both IPv4 and IPv6.
 - Socket: **works**, subscribed in 23 ms. The socket host isn't behind the same Akamai rule.
 
 The same REST call worked from my laptop through Windscribe, whose servers are in data centers too, so this looks like a block on large cloud providers rather than on servers in general.
 
-What I tried before changing the design:
+What I tried:
 
 1. `initialData: true` on the subscription, in five variants (events vs markets, `sportsbook` vs `betOffers` projections). The socket only ever acknowledges; it never sends a board (`fixtures/ws_nfl_initial_data.json`). DraftKings' own client code always loads the board over REST.
 2. The other hosts in DraftKings' page config (`scripts/probe_hosts.py`). The socket host does answer plain HTTP from AWS (404, not 403), but I couldn't find a path on it that serves the board.
+3. **Letting each browser load the board.** DraftKings' REST API sends `access-control-allow-origin: *`, so the page can fetch the board straight from DraftKings and lay the server's live socket changes on top. This works, but only for viewers in the US: from Japan without a VPN the browser gets blocked too. A reviewer outside the US would see an empty page, so this became the fallback rather than the main path.
 
-What the app does now, when the server can't get REST:
+**What runs now: REST through a US proxy.** The server sends only its REST calls through a static residential proxy (`DK_HTTP_PROXY`). The socket still connects directly from AWS, so the proxy adds nothing to live latency. The board fetch takes about 220 ms through it. Each call is about 12 KB gzipped, so one a minute is roughly 17 MB a day of proxy traffic. Every viewer, anywhere, gets the full board from our server.
 
-- **The browser loads the board.** DraftKings' REST API sends `access-control-allow-origin: *`, so the page fetches the board straight from DraftKings using the viewer's own connection, and refreshes it every 2 minutes (that's how new games appear).
-- **The server still owns the live data.** It keeps the socket open on AWS and sends every change to browsers over SSE. Without a snapshot it doesn't know which market a selection belongs to, but the selection ID itself encodes the market, side and line (`0HC84695450N300_1` = market `2_84695450`, home, -3; `0ML..._3` = moneyline, away). I checked that decoding against all 500 selections in four captured snapshots.
+The proxy credentials only exist on the server, in a root-only file (`/etc/betstamp/proxy.env`) that `deploy/set-proxy.sh` writes from a hidden prompt. They are never in the repo, and the app masks them out of logs and `/health`.
+
+**Fallbacks if the proxy fails:**
+
+- **The browser loads the board** (option 3 above), refreshed every 2 minutes, and the server keeps streaming changes. Without a snapshot the server doesn't know which market a selection belongs to, but the selection ID itself encodes the market, side and line (`0HC84695450N300_1` = market `2_84695450`, home, -3; `0ML..._3` = moneyline, away). I checked that decoding against all 500 selections in four captured snapshots.
 - **Socket beats REST.** When a page loads, the server sends everything its socket has seen, and the page lays that over the REST copy, because the socket is always the newer of the two.
-- **After a socket reconnect**, the server forgets what it held (it may have missed changes during the gap) and tells every page to reload the board from REST.
-- **If REST becomes reachable from the server again**, it takes the board back and the browsers switch over by themselves.
-
-The trade-off: a viewer whose own network is also blocked by DraftKings gets a banner saying so. When the server can reach REST (for example on my laptop), it works exactly as described in "How it works".
+- **After a socket reconnect** in this mode, the server forgets what it held (it may have missed changes during the gap) and tells every page to reload the board.
+- **When the server can reach REST again**, it takes the board back and the browsers switch over by themselves.
 
 ## How fresh are the odds?
 
@@ -123,7 +126,7 @@ The page footer shows these live (p50 and p95 over the last 2000 updates), and `
 - **Socket drops:** reconnect with exponential backoff and jitter (1s, 2s, 4s, up to 30s). While waiting, the board is refreshed from REST every 5 seconds and the page says "polling".
 - **Dead connection that never closes:** caught by the 5-second ping. No pong means reconnect.
 - **DraftKings unreachable:** the page keeps the last good odds with a banner showing when they were last confirmed, and the server keeps retrying.
-- **REST blocked but socket fine (AWS):** browsers load the board themselves and the server streams changes (see "What happened on AWS").
+- **REST blocked from the server:** on AWS it goes through a proxy. If the proxy fails too, browsers load the board themselves and the server streams changes (see "What happened on AWS").
 - **Unexpected data:** each row is validated on its own. A bad row is dropped and counted, never fatal. A message type we can't decode triggers an immediate REST re-sync.
 - **Out-of-order updates:** dropped using DraftKings' publish timestamps.
 - **Browser loses the server:** EventSource reconnects by itself, and every reconnect starts with a full board, so a browser can't drift.
@@ -157,7 +160,7 @@ app/server.py     FastAPI: page, /api/odds, /api/stream (SSE), /health
 static/index.html the page
 fixtures/         real DraftKings captures used by tests and replay
 scripts/          probe.py (can this machine reach DraftKings?), probe_hosts.py, capture_initial.py
-deploy/           user-data.sh (unattended EC2 setup), systemd unit, Caddy config
+deploy/           user-data.sh (unattended EC2 setup), systemd unit, Caddy config, set-proxy.sh
 ```
 
 ## How I used AI
